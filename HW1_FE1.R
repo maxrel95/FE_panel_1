@@ -31,30 +31,25 @@ filteredData = df9296%>%
 nbrOfFirms = length(unique(filteredData$bhcid))
 
 filteredData$date = as.POSIXct(filteredData$date)
-dt = data.table(filteredData)
 dt = data.table()
-dt[,bhcid:=filteredData$bhcid]
-dt[,date:=filteredData$date]
-dt[,SECRAT:=(filteredData$fedfundsrepoasset + filteredData$securities)/filteredData$assets]
-dt[,LIQRAT:=SECRAT + filteredData$cash/filteredData$assets]
-dt[,DEPRAT:=filteredData$transdep / filteredData$deposits]
-dt[,COMRAT:=filteredData$commitments/(filteredData$commitments+filteredData$loans)]
+dt[, bhcid:=filteredData$bhcid]
+dt[, date:=filteredData$date]
+dt[, SECRAT:=(filteredData$fedfundsrepoasset + filteredData$securities)/filteredData$assets]
+dt[, LIQRAT:=SECRAT + filteredData$cash/filteredData$assets]
+dt[, DEPRAT:=filteredData$transdep / filteredData$deposits]
+dt[, COMRAT:=filteredData$commitments/(filteredData$commitments+filteredData$loans)]
+dt[, ASSET:=filteredData$assets]
 dt[, ciloans:=filteredData$ciloans/filteredData$loans]
 dt[, persloans:=filteredData$persloans/filteredData$loans]
 dt[, reloans:=filteredData$reloans/filteredData$loans]
 
-SECRAT <- (filteredData$fedfundsrepoasset + filteredData$securities)/filteredData$assets
-LIQRAT <- SECRAT + filteredData$cash/filteredData$assets
-DEPRAT <- filteredData$transdep / filteredData$deposits
-COMRAT <- filteredData$commitments/(filteredData$commitments+filteredData$loans)
+dfFull = as.data.frame(dt)
+dfBig = getSampleOnVariable(dt, 1, 100)
+dfMid = getSampleOnVariable(dt, 101, 600)
+dfSmall = getSampleOnVariable(dt, 601, nbrOfFirms)
 
-df = data.frame( list( filteredData$bhcid, filteredData$date, LIQRAT, SECRAT, DEPRAT, COMRAT, filteredData$assets ) )
-colnames( df ) = c( "bhcid", "date", "LIQRAT", "SECRAT", "DEPRAT", "COMRAT", "ASSET" )
-
-t1a = quartileTable(df, 1, 'max')
-t1b = quartileTable(df, 1, 100)
-t1c = quartileTable(df, 101, 600)
-t1d = quartileTable(df, 601, 'max')
+t1 = cbind(quartileTable(dfFull),  quartileTable(dfBig), quartileTable(dfMid), quartileTable(dfSmall))
+colnames(t1) = c("Full", "Big", "Mid", "Small")
 
 ## Q2
 

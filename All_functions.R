@@ -3,14 +3,18 @@ library(readxl)
 library( plm )
 library( dplyr )
 
-quartileTable<- function(df, a, b){
-  if(b=="max"){
-    b=length(df$ASSET)
-  }
-  tableI = df %>%
-    arrange(desc(ASSET)) %>%
+getSampleOnVariable <- function(df, a, b){
+  dt = df %>%
+    as.data.frame() %>%
     group_by(date) %>%
-    slice(a:b)%>%
+    arrange(desc(ASSET)) %>%
+    slice(a:b) %>%
+  dt = dt[order(bhcid)]
+  return(dt)
+}
+
+quartileTable<- function(df){
+  tableI = df %>%
     group_by(date)%>%
     summarise(mLIQRAT=median(LIQRAT, na.rm = TRUE), mSECRAT=median(SECRAT, na.rm = TRUE), mDEPRAT=median(DEPRAT, na.rm = TRUE), mCOMRAT=median(COMRAT, na.rm = TRUE),
               q1LIQRAT=quantile(LIQRAT, na.rm = TRUE, probs = 0.25), q1SECRAT=quantile(SECRAT, na.rm = TRUE, probs = 0.25),
