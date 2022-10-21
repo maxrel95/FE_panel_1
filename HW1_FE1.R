@@ -10,7 +10,20 @@ pnl$date = strptime(pnl$date, format = "%Y%m%d")
 df9296 = pnl[pnl$date>="1992-03-31" & pnl$date<="1996-12-31", c("date", "rssdid", "bhcid", "chartertype", "fedfundsrepoasset", "securities",
                                                               "assets","cash", "transdep", "deposits", "commitments", "loans")]
 
+df9296$bhcid[df9296$bhcid==0] = df9296$rssdid[df9296$bhcid==0]
+
+# find the all possible chartertype
 chartertype = unique(df9296$chartertype)
+
+d = df9296%>%
+  filter(chartertype==200 | chartertype==300 | chartertype==320 | chartertype==340)%>%
+  group_by(bhcid, date ) %>%
+  summarise(fedfundsrepoasset=sum(fedfundsrepoasset), securities=sum(securities), assets=sum(assets),
+            cash=sum(cash), transdep=sum(transdep),  deposits=sum(deposits),  commitments=sum(commitments),  loans=sum(loans))%>%
+  ungroup()%>%
+  group_by(bhcid) %>%
+  filter(n()>=8) %>%
+  ungroup()
 
 x = filter(df9296, chartertype==200 | chartertype==300 | chartertype==320 | chartertype==340) # filter data to keep only the one with a chartertype of 200
 
@@ -27,7 +40,7 @@ z = y %>% #remove every bank that has less than 8 observations
   filter(n()>=8) %>%
   ungroup()
 
-nbrOfFirms = length(unique(z$bhcid))
+nbrOfFirms = length(unique(d$bhcid))
 
 SECRAT <- (z$fedfundsrepoasset + z$securities)/z$assets
 LIQRAT <- SECRAT + z$cash/z$assets
@@ -46,13 +59,46 @@ tableI = df %>%
             q3DEPRAT=quantile(DEPRAT, na.rm = TRUE, probs = 0.75), q3COMRAT=quantile(COMRAT, na.rm = TRUE, probs = 0.75))%>%
   ungroup()%>%
   as.data.frame()
-
 table1 = as.data.frame(colMeans(tableI[,-1]))
 
-temp
+table12 = df %>%
+  arrange(desc(ASSET)) %>%
+  group_by(date) %>%
+  slice(1:100)%>%
+  summarise(mLIQRAT=median(LIQRAT, na.rm = TRUE), mSECRAT=median(SECRAT, na.rm = TRUE), mDEPRAT=median(DEPRAT, na.rm = TRUE), mCOMRAT=median(COMRAT, na.rm = TRUE),
+            q1LIQRAT=quantile(LIQRAT, na.rm = TRUE, probs = 0.25), q1SECRAT=quantile(SECRAT, na.rm = TRUE, probs = 0.25),
+            q1DEPRAT=quantile(DEPRAT, na.rm = TRUE, probs = 0.25), q1COMRAT=quantile(COMRAT, na.rm = TRUE, probs = 0.25),
+            q3LIQRAT=quantile(LIQRAT, na.rm = TRUE, probs = 0.75), q3SECRAT=quantile(SECRAT, na.rm = TRUE, probs = 0.75),
+            q3DEPRAT=quantile(DEPRAT, na.rm = TRUE, probs = 0.75), q3COMRAT=quantile(COMRAT, na.rm = TRUE, probs = 0.75))%>%
+  ungroup()%>%
+  as.data.frame()
+table12 = as.data.frame(colMeans(table12[,-1]))
 
-med = aggregate(df$LIQRAT, list(df$date), FUN=median, na.rm=TRUE)
-mean(med[,2])
-quant = aggregate(df$LIQRAT, list(df$date), FUN=quantile, probs=c(0.25, 0.75), na.rm=TRUE)
+table13 = df %>%
+  arrange(desc(ASSET)) %>%
+  group_by(date) %>%
+  slice(101:600)%>%
+  summarise(mLIQRAT=median(LIQRAT, na.rm = TRUE), mSECRAT=median(SECRAT, na.rm = TRUE), mDEPRAT=median(DEPRAT, na.rm = TRUE), mCOMRAT=median(COMRAT, na.rm = TRUE),
+            q1LIQRAT=quantile(LIQRAT, na.rm = TRUE, probs = 0.25), q1SECRAT=quantile(SECRAT, na.rm = TRUE, probs = 0.25),
+            q1DEPRAT=quantile(DEPRAT, na.rm = TRUE, probs = 0.25), q1COMRAT=quantile(COMRAT, na.rm = TRUE, probs = 0.25),
+            q3LIQRAT=quantile(LIQRAT, na.rm = TRUE, probs = 0.75), q3SECRAT=quantile(SECRAT, na.rm = TRUE, probs = 0.75),
+            q3DEPRAT=quantile(DEPRAT, na.rm = TRUE, probs = 0.75), q3COMRAT=quantile(COMRAT, na.rm = TRUE, probs = 0.75))%>%
+  ungroup()%>%
+  as.data.frame()
+table13 = as.data.frame(colMeans(table13[,-1]))
+
+table14 = df %>%
+  arrange(desc(ASSET)) %>%
+  group_by(date) %>%
+  slice(601:length(ASSET))%>%
+  summarise(mLIQRAT=median(LIQRAT, na.rm = TRUE), mSECRAT=median(SECRAT, na.rm = TRUE), mDEPRAT=median(DEPRAT, na.rm = TRUE), mCOMRAT=median(COMRAT, na.rm = TRUE),
+            q1LIQRAT=quantile(LIQRAT, na.rm = TRUE, probs = 0.25), q1SECRAT=quantile(SECRAT, na.rm = TRUE, probs = 0.25),
+            q1DEPRAT=quantile(DEPRAT, na.rm = TRUE, probs = 0.25), q1COMRAT=quantile(COMRAT, na.rm = TRUE, probs = 0.25),
+            q3LIQRAT=quantile(LIQRAT, na.rm = TRUE, probs = 0.75), q3SECRAT=quantile(SECRAT, na.rm = TRUE, probs = 0.75),
+            q3DEPRAT=quantile(DEPRAT, na.rm = TRUE, probs = 0.75), q3COMRAT=quantile(COMRAT, na.rm = TRUE, probs = 0.75))%>%
+  ungroup()%>%
+  as.data.frame()
+table14 = as.data.frame(colMeans(table14[,-1]))
+
 
 
