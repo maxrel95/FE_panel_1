@@ -2,6 +2,7 @@ library(data.table)
 library(readxl)
 library( plm )
 library( dplyr )
+source("All_functions.R")
 
 # author Maxime Borel
 
@@ -15,7 +16,7 @@ df9296$bhcid[df9296$bhcid==0] = df9296$rssdid[df9296$bhcid==0]
 # find the all possible chartertype
 chartertype = unique(df9296$chartertype)
 
-d = df9296%>%
+filteredData = df9296%>%
   filter(chartertype==200 | chartertype==300 | chartertype==320 | chartertype==340)%>%
   group_by(bhcid, date ) %>%
   summarise(fedfundsrepoasset=sum(fedfundsrepoasset), securities=sum(securities), assets=sum(assets),
@@ -25,32 +26,22 @@ d = df9296%>%
   filter(n()>=8) %>%
   ungroup()
 
-x = filter(df9296, chartertype==200 | chartertype==300 | chartertype==320 | chartertype==340) # filter data to keep only the one with a chartertype of 200
+nbrOfFirms = length(unique(filteredData$bhcid))
 
-x$bhcid[x$bhcid==0] = x$rssdid[x$bhcid==0] #need to identify by holding for aggregating
-y = x %>% # aggregate bank that share the same bhic and sum it to get the holding amount
-  group_by(bhcid, date ) %>%
-  summarise(fedfundsrepoasset=sum(fedfundsrepoasset), securities=sum(securities), assets=sum(assets),
-            cash=sum(cash), transdep=sum(transdep),  deposits=sum(deposits),  commitments=sum(commitments),  loans=sum(loans))%>%
-  ungroup()%>%
-  as.data.frame()
+SECRAT <- (filteredData$fedfundsrepoasset + filteredData$securities)/filteredData$assets
+LIQRAT <- SECRAT + filteredData$cash/filteredData$assets
+DEPRAT <- filteredData$transdep / filteredData$deposits
+COMRAT <- filteredData$commitments/(filteredData$commitments+filteredData$loans)
 
-z = y %>% #remove every bank that has less than 8 observations
-  group_by(bhcid) %>%
-  filter(n()>=8) %>%
-  ungroup()
-
-nbrOfFirms = length(unique(d$bhcid))
-
-SECRAT <- (z$fedfundsrepoasset + z$securities)/z$assets
-LIQRAT <- SECRAT + z$cash/z$assets
-DEPRAT <- z$transdep / z$deposits
-COMRAT <- z$commitments/(z$commitments+z$loans)
-
-df = data.frame( list( z$bhcid, z$date, LIQRAT, SECRAT, DEPRAT, COMRAT, z$assets ) )
+df = data.frame( list( filteredData$bhcid, filteredData$date, LIQRAT, SECRAT, DEPRAT, COMRAT, filteredData$assets ) )
 colnames( df ) = c( "bhcid", "date", "LIQRAT", "SECRAT", "DEPRAT", "COMRAT", "ASSET" )
 
+test = quartileTable(df, 1, 'max')
+
 tableI = df %>%
+  arrange(desc(ASSET)) %>%
+  group_by(date) %>%
+  slice(1:length(ASSET))%>%
   group_by(date)%>%
   summarise(mLIQRAT=median(LIQRAT, na.rm = TRUE), mSECRAT=median(SECRAT, na.rm = TRUE), mDEPRAT=median(DEPRAT, na.rm = TRUE), mCOMRAT=median(COMRAT, na.rm = TRUE),
             q1LIQRAT=quantile(LIQRAT, na.rm = TRUE, probs = 0.25), q1SECRAT=quantile(SECRAT, na.rm = TRUE, probs = 0.25),
@@ -60,6 +51,8 @@ tableI = df %>%
   ungroup()%>%
   as.data.frame()
 table1 = as.data.frame(colMeans(tableI[,-1]))
+
+test2 = quartileTable(df, 1, 100)
 
 table12 = df %>%
   arrange(desc(ASSET)) %>%
