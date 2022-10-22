@@ -3,15 +3,17 @@ library(readxl)
 library( plm )
 library( dplyr )
 library(binsreg)
+library(ggplot2)
 source("All_functions.R")
 
 # author Maxime Borel
 
 pnl<- read.csv( "PS1_data/callreports_1976_2021wc.csv" ) # read the data
 pnl$date = strptime(pnl$date, format = "%Y%m%d")
-df9296 = pnl[pnl$date>="1992-03-31" & pnl$date<="1996-12-31", c("date", "rssdid", "bhcid", "chartertype", "fedfundsrepoasset", "securities",
-                                                              "assets","cash", "transdep", "deposits", "commitments", "loans",
-                                                              "ciloans", "persloans", "reloans")]
+df9296 = pnl[pnl$date>="1992-03-31" & pnl$date<="1996-12-31", c("date", "rssdid", "bhcid", "chartertype",
+                                                                "fedfundsrepoasset", "securities","assets",
+                                                                "cash", "transdep", "deposits", "commitments",
+                                                                "loans","ciloans", "persloans", "reloans")]
 
 df9296$bhcid[df9296$bhcid==0] = df9296$rssdid[df9296$bhcid==0]
 
@@ -22,7 +24,8 @@ filteredData = df9296%>%
   filter(chartertype==200 | chartertype==300 | chartertype==320 | chartertype==340)%>%
   group_by(bhcid, date ) %>%
   summarise(fedfundsrepoasset=sum(fedfundsrepoasset), securities=sum(securities), assets=sum(assets),
-            cash=sum(cash), transdep=sum(transdep),  deposits=sum(deposits),  commitments=sum(commitments),  loans=sum(loans),
+            cash=sum(cash), transdep=sum(transdep),  deposits=sum(deposits),
+            commitments=sum(commitments),  loans=sum(loans),
             ciloans=sum(ciloans), persloans=sum(persloans) , reloans=sum(reloans))%>%
   ungroup()%>%
   group_by(bhcid) %>%
@@ -52,14 +55,13 @@ dfSmall = getSampleOnVariable(dt, 601, nbrOfFirms)
 crossSectionalTimeAveraged = dfFull %>%
   group_by(bhcid) %>%
   summarise(LIQRAT=mean(LIQRAT, na.rm=TRUE), SECRAT=mean(SECRAT, na.rm=TRUE), DEPRAT=mean(DEPRAT, na.rm=TRUE),
-            COMRAT=mean(COMRAT, na.rm=TRUE), ASSET=mean(ASSET, na.rm=TRUE), ciloans=mean(ciloans, na.rm=TRUE),
+            COMRAT=mean(COMRAT, na.rm=TRUE), ASSET=mean(ASSET, na.rm=TRUE),ciloans=mean(ciloans, na.rm=TRUE),
             persloans=mean(persloans, na.rm=TRUE), reloans=mean(reloans, na.rm=TRUE)) %>%
   ungroup()
 
 cstaBig = crossSectionalTimeAveraged %>%
   arrange(desc(ASSET)) %>%
   slice(1:100)
-#cstaBig = subset(cstaBig, select = -c(ASSET))
 cstaMid = crossSectionalTimeAveraged %>%
   arrange(desc(ASSET)) %>%
   slice(101:600)
@@ -136,8 +138,34 @@ m8NoControls = lm(SECRAT ~ DEPRAT,
                   data = cstaSmall)
 
 ######### Q3
-x = binsreg(crossSectionalTimeAveraged$LIQRAT, crossSectionalTimeAveraged$DEPRAT)
+binsreg(crossSectionalTimeAveraged$LIQRAT, crossSectionalTimeAveraged$DEPRAT)
 
+plot(crossSectionalTimeAveraged$LIQRAT, crossSectionalTimeAveraged$DEPRAT, 
+     xlab="DEPRAT", ylab="LIQRAT", pch=19, col = "blue", cex = 0.2)
+
+######### Q4
+# get the 600 largest banks, either I take the 600 largest using the average over time which induce bias in result or at each date, 
+# I select the 600 largest which might have more than 600 different bank but still at each date they are the largest 
+
+bhcid600 = c( unique( cstaBig$bhcid ), unique( cstaMid$bhcid ) )
+panel600 = dt[ dt$bhcid %in% bhcid600, ]
+panelSmall = dt[ dt$bhcid %in% unique( cstaSmall$bhcid ), ]
+
+panelBigMidVar = dt %>%
+  group_by( date ) %>%
+  arrange( desc( ASSET ) ) %>%
+  slice( 1:600 ) %>%
+  ungroup()
+
+panelSmallVar = dt %>%
+  group_by( date ) %>%
+  arrange( desc( ASSET ) ) %>%
+  slice( 601:nbrOfFirms ) %>%
+  ungroup()
+
+# they dont have the same number of observations. why ? former we said : based on the average select the 600 largest, then
+# get all the corresponding data. but some banks dont have 20 date observations which reduce the total number. The latter, 
+# at each date, we measure the 600 largest and keep only these value so obviously we have more date. 
 
 
 
