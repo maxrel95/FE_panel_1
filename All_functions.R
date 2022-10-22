@@ -6,10 +6,10 @@ library( dplyr )
 getSampleOnVariable <- function(df, a, b){
   dt = df %>%
     as.data.frame() %>%
+    arrange(desc(mean(ASSET))) %>%
     group_by(date) %>%
-    arrange(desc(ASSET)) %>%
-    slice(a:b) %>%
-  dt = dt[order(bhcid)]
+    slice(a:b)
+  dt = dt[order(dt$bhcid),]
   return(dt)
 }
 
