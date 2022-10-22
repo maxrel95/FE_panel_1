@@ -26,3 +26,14 @@ quartileTable<- function(df){
   table1 = as.data.frame(colMeans(tableI[,-1]))
   return(table1)
 }
+
+summaryOLS = function( model, data, coeff, var, name ){
+  resume = summary( model )
+  res = resume$coefficients[coeff, c("Estimate", "t value")]
+  res['Explanatory power'] = res["Estimate"]*( sd( data %>% select(var[1]) %>% unlist(),
+                                                   na.rm = TRUE ) / sd( data %>% select(var[2]) %>% unlist(),
+                                                                        na.rm = TRUE ) )
+  res = as.data.frame( res )
+  colnames(res) = name
+  return(res)
+}

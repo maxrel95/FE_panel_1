@@ -30,11 +30,12 @@ filteredData = df9296%>%
   ungroup()%>%
   group_by(bhcid) %>%
   filter(n()>=8) %>%
-  ungroup()
+  ungroup() %>%
+  mutate( bhcid = as.factor( bhcid),
+          date = as.factor( as.character( date ) ) )
 
 nbrOfFirms = length(unique(filteredData$bhcid))
 
-filteredData$date = as.POSIXct(filteredData$date)
 dt = data.table()
 dt[, bhcid:=filteredData$bhcid]
 dt[, date:=filteredData$date]
@@ -42,17 +43,13 @@ dt[, SECRAT:=(filteredData$fedfundsrepoasset + filteredData$securities)/filtered
 dt[, LIQRAT:=SECRAT + filteredData$cash/filteredData$assets]
 dt[, DEPRAT:=filteredData$transdep / filteredData$deposits]
 dt[, COMRAT:=filteredData$commitments/(filteredData$commitments+filteredData$loans)]
-dt[, ASSET:=filteredData$assets]
+dt[, ASSET:=log(filteredData$assets)]
 dt[, ciloans:=filteredData$ciloans/filteredData$loans]
 dt[, persloans:=filteredData$persloans/filteredData$loans]
 dt[, reloans:=filteredData$reloans/filteredData$loans]
 
-dfFull = as.data.frame(dt)
-dfBig = getSampleOnVariable(dt, 1, 100)
-dfMid = getSampleOnVariable(dt, 101, 600)
-dfSmall = getSampleOnVariable(dt, 601, nbrOfFirms)
-
-crossSectionalTimeAveraged = dfFull %>%
+crossSectionalTimeAveraged = dt %>%
+  as.data.frame() %>%
   group_by(bhcid) %>%
   summarise(LIQRAT=mean(LIQRAT, na.rm=TRUE), SECRAT=mean(SECRAT, na.rm=TRUE), DEPRAT=mean(DEPRAT, na.rm=TRUE),
             COMRAT=mean(COMRAT, na.rm=TRUE), ASSET=mean(ASSET, na.rm=TRUE),ciloans=mean(ciloans, na.rm=TRUE),
@@ -88,79 +85,243 @@ t1 = cbind(rbind(quantile(crossSectionalTimeAveraged$LIQRAT, probs = q, na.rm = 
                  quantile(cstaSmall$DEPRAT, probs = q, na.rm = TRUE),
                  quantile(cstaSmall$COMRAT, probs = q, na.rm = TRUE)))
 rownames(t1) = c("Full", "Big", "Mid", "Small")
-t1 = as.data.frame(t1)
+t1 = round(as.data.frame(t1), digits = 3)
 
-######### Q2
-crossSectionalTimeAveraged$ASSET = log(crossSectionalTimeAveraged$ASSET)
-cstaBig$ASSET = log(cstaBig$ASSET)
-cstaMid$ASSET = log(cstaMid$ASSET)
-cstaSmall$ASSET = log(cstaSmall$ASSET)
+rm(df9296)
 
-#######################
+######### Q2 #########
+
 m1 = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
         data = crossSectionalTimeAveraged)
-m1NoControls = lm(LIQRAT ~ DEPRAT,
-        data = crossSectionalTimeAveraged)
+res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "All Banks")
 
-m2 = lm(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+m1 = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+        data = cstaBig)
+res2 = summaryOLS(m1, cstaBig, 2, c("DEPRAT", "LIQRAT"), "Large Banks")
+
+m1 = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+        data = cstaMid)
+res3 = summaryOLS(m1, cstaMid, 2, c("DEPRAT", "LIQRAT"), "Medium Banks")
+
+m1 = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+        data = cstaSmall)
+res4 = summaryOLS(m1, cstaSmall, 2, c("DEPRAT", "LIQRAT"), "Small Banks")
+
+tabIIIa = cbind( res1, res2, res3, res4)
+
+
+m1 = lm(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
         data = crossSectionalTimeAveraged)
-m2NoControls = lm(SECRAT ~ DEPRAT,
+res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "SECRAT"), "All Banks")
+
+m1 = lm(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+        data = cstaBig)
+res2 = summaryOLS(m1, cstaBig, 2, c("DEPRAT", "SECRAT"), "Large Banks")
+
+m1 = lm(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+        data = cstaMid)
+res3 = summaryOLS(m1, cstaMid, 2, c("DEPRAT", "SECRAT"), "Medium Banks")
+
+m1 = lm(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+        data = cstaSmall)
+res4 = summaryOLS(m1, cstaSmall, 2, c("DEPRAT", "SECRAT"), "Small Banks")
+
+tabIIIb = cbind( res1, res2, res3, res4)
+
+tabIII = rbind( tabIIIa, tabIIIb)
+
+# remove all control variables
+
+m1 = lm(LIQRAT ~ DEPRAT,
+        data = crossSectionalTimeAveraged)
+res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "All Banks")
+
+m1 = lm(LIQRAT ~ DEPRAT,
+        data = cstaBig)
+res2 = summaryOLS(m1, cstaBig, 2, c("DEPRAT", "LIQRAT"), "Large Banks")
+
+m1 = lm(LIQRAT ~ DEPRAT,
+        data = cstaMid)
+res3 = summaryOLS(m1, cstaMid, 2, c("DEPRAT", "LIQRAT"), "Medium Banks")
+
+m1 = lm(LIQRAT ~ DEPRAT,
+        data = cstaSmall)
+res4 = summaryOLS(m1, cstaSmall, 2, c("DEPRAT", "LIQRAT"), "Small Banks")
+
+tabIIIa = cbind( res1, res2, res3, res4)
+
+
+m1 = lm(SECRAT ~ DEPRAT,
+        data = crossSectionalTimeAveraged)
+res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "SECRAT"), "All Banks")
+
+m1 = lm(SECRAT ~ DEPRAT,
+        data = cstaBig)
+res2 = summaryOLS(m1, cstaBig, 2, c("DEPRAT", "SECRAT"), "Large Banks")
+
+m1 = lm(SECRAT ~ DEPRAT,
+        data = cstaMid)
+res3 = summaryOLS(m1, cstaMid, 2, c("DEPRAT", "SECRAT"), "Medium Banks")
+
+m1 = lm(SECRAT ~ DEPRAT,
+        data = cstaSmall)
+res4 = summaryOLS(m1, cstaSmall, 2, c("DEPRAT", "SECRAT"), "Small Banks")
+
+tabIIIb = cbind( res1, res2, res3, res4)
+
+tabIIINoControl = rbind( tabIIIa, tabIIIb)
+
+##### Tab IV #######
+m1 = lm(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+        data = crossSectionalTimeAveraged)
+res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "COMRAT"), "All Banks")
+
+m1 = lm(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+        data = cstaBig)
+res2 = summaryOLS(m1, cstaBig, 2, c("DEPRAT", "COMRAT"), "Large Banks")
+
+m1 = lm(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+        data = cstaMid)
+res3 = summaryOLS(m1, cstaMid, 2, c("DEPRAT", "COMRAT"), "Medium Banks")
+
+m1 = lm(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+        data = cstaSmall)
+res4 = summaryOLS(m1, cstaSmall, 2, c("DEPRAT", "COMRAT"), "Small Banks")
+
+tabIV = cbind( res1, res2, res3, res4)
+
+m1 = lm(COMRAT ~ DEPRAT,
+        data = crossSectionalTimeAveraged)
+res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "COMRAT"), "All Banks")
+
+m1 = lm(COMRAT ~ DEPRAT,
+        data = cstaBig)
+res2 = summaryOLS(m1, cstaBig, 2, c("DEPRAT", "COMRAT"), "Large Banks")
+
+m1 = lm(COMRAT ~ DEPRAT,
+        data = cstaMid)
+res3 = summaryOLS(m1, cstaMid, 2, c("DEPRAT", "COMRAT"), "Medium Banks")
+
+m1 = lm(COMRAT ~ DEPRAT,
+        data = cstaSmall)
+res4 = summaryOLS(m1, cstaSmall, 2, c("DEPRAT", "COMRAT"), "Small Banks")
+
+tabIVNoControl = cbind( res1, res2, res3, res4)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+m1 = lm(LIQRAT ~ DEPRAT,
+        data = crossSectionalTimeAveraged)
+res2 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m1NoConrtols")
+
+m1 = lm(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+        data = crossSectionalTimeAveraged)
+res3 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m2")
+
+m1 = lm(SECRAT ~ DEPRAT,
                   data = crossSectionalTimeAveraged)
+res4 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m2NoConrtols")
+
 ####################
-m3 = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+m1 = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
         data = cstaBig)
-m3NoControls = lm(LIQRAT ~ DEPRAT,
+res5 = summaryOLS(m1, cstaBig, 2, c("DEPRAT", "LIQRAT"), "m1")
+m1 = lm(LIQRAT ~ DEPRAT,
                   data = cstaBig)
+res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m1")
 
-m4 = lm(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+
+m1 = lm(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
         data = cstaBig)
-m4NoControls = lm(SECRAT ~ DEPRAT,
+res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m1")
+m1 = lm(SECRAT ~ DEPRAT,
                   data = cstaBig)
-####################
-m5 = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
-        data = cstaMid)
-m5NoControls = lm(LIQRAT ~ DEPRAT,
-                  data = cstaMid)
+res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m1")
 
-m6 = lm(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
-        data = cstaMid)
-m6NoControls = lm(SECRAT ~ DEPRAT,
-                  data = cstaMid)
 ####################
-m7 = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
-        data = cstaSmall)
-m7NoControls = lm(LIQRAT ~ DEPRAT,
-                  data = cstaSmall)
+m1 = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+        data = cstaMid)
+res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m1")
 
-m8 = lm(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+m1 = lm(LIQRAT ~ DEPRAT,
+                  data = cstaMid)
+res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m1")
+
+m1 = lm(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+        data = cstaMid)
+res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m1")
+
+m1 = lm(SECRAT ~ DEPRAT,
+                  data = cstaMid)
+res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m1")
+
+####################
+m1 = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
         data = cstaSmall)
-m8NoControls = lm(SECRAT ~ DEPRAT,
+res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m1")
+
+m1 = lm(LIQRAT ~ DEPRAT,
                   data = cstaSmall)
+res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m1")
+
+
+m1 = lm(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+        data = cstaSmall)
+res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m1")
+
+m1 = lm(SECRAT ~ DEPRAT,
+                  data = cstaSmall)
+res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m1")
+
 ####################
 #######################
-m9 = lm(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+m1 = lm(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
         data = crossSectionalTimeAveraged)
-m9NoControls = lm(COMRAT ~ DEPRAT,
+res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m1")
+
+m1 = lm(COMRAT ~ DEPRAT,
                   data = crossSectionalTimeAveraged)
+res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m1")
 
 ####################
-m10 = lm(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+m1 = lm(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
         data = cstaBig)
-m10NoControls = lm(COMRAT ~ DEPRAT,
+res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m1")
+m1 = lm(COMRAT ~ DEPRAT,
                   data = cstaBig)
+res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m1")
+
 
 ####################
-m11 = lm(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+m1 = lm(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
         data = cstaMid)
-m11NoControls = lm(COMRAT ~ DEPRAT,
+res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m1")
+
+m1 = lm(COMRAT ~ DEPRAT,
                   data = cstaMid)
+res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m1")
+
 
 ####################
-m12 = lm(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+m1 = lm(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
         data = cstaSmall)
-m12NoControls = lm(COMRAT ~ DEPRAT,
-                  data = cstaSmall)
+res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m1")
 
+m1 = lm(COMRAT ~ DEPRAT,
+                  data = cstaSmall)
+res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m1")
 
 ######### Q3
 binsreg(crossSectionalTimeAveraged$LIQRAT, crossSectionalTimeAveraged$DEPRAT)
@@ -172,33 +333,20 @@ plot(crossSectionalTimeAveraged$LIQRAT, crossSectionalTimeAveraged$DEPRAT,
 # get the 600 largest banks, either I take the 600 largest using the average over time which induce bias in result or at each date, 
 # I select the 600 largest which might have more than 600 different bank but still at each date they are the largest 
 
-bhcid600 = c( unique( cstaBig$bhcid ), unique( cstaMid$bhcid ) )
-
-panel600 = dt[ dt$bhcid %in% bhcid600, ]
-panel600 = panel600 %>%
-  mutate( bhcid = as.factor( bhcid ),
-          date = as.factor( as.character( date ) ) )
-
+panel600 = dt[ dt$bhcid %in% c( unique( cstaBig$bhcid ), unique( cstaMid$bhcid ) ), ]
 panelSmall = dt[ dt$bhcid %in% unique( cstaSmall$bhcid ), ]
-panelSmall = panelSmall %>%
-  mutate( bhcid = as.factor( bhcid ),
-          date = as.factor( as.character( date ) ) )
 
 panelBigMidVar = dt %>%
   group_by( date ) %>%
   arrange( desc( ASSET ) ) %>%
   slice( 1:600 ) %>%
-  ungroup() %>%
-  mutate( bhcid = as.factor( bhcid),
-          date = as.factor( as.character( date ) ) )
+  ungroup() 
 
 panelSmallVar = dt %>%
   group_by( date ) %>%
   arrange( desc( ASSET ) ) %>%
   slice( 601:nbrOfFirms ) %>%
-  ungroup() %>%
-  mutate( bhcid = as.factor( bhcid),
-          date = as.factor( as.character( date ) ) )
+  ungroup()
 
 # they dont have the same number of observations. why ? former we said : based on the average select the 600 largest, then
 # get all the corresponding data. but some banks dont have 20 date observations which reduce the total number. The latter, 
