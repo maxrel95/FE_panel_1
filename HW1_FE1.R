@@ -136,6 +136,31 @@ m8 = lm(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
         data = cstaSmall)
 m8NoControls = lm(SECRAT ~ DEPRAT,
                   data = cstaSmall)
+####################
+#######################
+m9 = lm(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+        data = crossSectionalTimeAveraged)
+m9NoControls = lm(COMRAT ~ DEPRAT,
+                  data = crossSectionalTimeAveraged)
+
+####################
+m10 = lm(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+        data = cstaBig)
+m10NoControls = lm(COMRAT ~ DEPRAT,
+                  data = cstaBig)
+
+####################
+m11 = lm(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+        data = cstaMid)
+m11NoControls = lm(COMRAT ~ DEPRAT,
+                  data = cstaMid)
+
+####################
+m12 = lm(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+        data = cstaSmall)
+m12NoControls = lm(COMRAT ~ DEPRAT,
+                  data = cstaSmall)
+
 
 ######### Q3
 binsreg(crossSectionalTimeAveraged$LIQRAT, crossSectionalTimeAveraged$DEPRAT)
@@ -148,27 +173,62 @@ plot(crossSectionalTimeAveraged$LIQRAT, crossSectionalTimeAveraged$DEPRAT,
 # I select the 600 largest which might have more than 600 different bank but still at each date they are the largest 
 
 bhcid600 = c( unique( cstaBig$bhcid ), unique( cstaMid$bhcid ) )
+
 panel600 = dt[ dt$bhcid %in% bhcid600, ]
+panel600 = panel600 %>%
+  mutate( bhcid = as.factor( bhcid ),
+          date = as.factor( as.character( date ) ) )
+
 panelSmall = dt[ dt$bhcid %in% unique( cstaSmall$bhcid ), ]
+panelSmall = panelSmall %>%
+  mutate( bhcid = as.factor( bhcid ),
+          date = as.factor( as.character( date ) ) )
 
 panelBigMidVar = dt %>%
   group_by( date ) %>%
   arrange( desc( ASSET ) ) %>%
   slice( 1:600 ) %>%
-  ungroup()
+  ungroup() %>%
+  mutate( bhcid = as.factor( bhcid),
+          date = as.factor( as.character( date ) ) )
 
 panelSmallVar = dt %>%
   group_by( date ) %>%
   arrange( desc( ASSET ) ) %>%
   slice( 601:nbrOfFirms ) %>%
-  ungroup()
+  ungroup() %>%
+  mutate( bhcid = as.factor( bhcid),
+          date = as.factor( as.character( date ) ) )
 
 # they dont have the same number of observations. why ? former we said : based on the average select the 600 largest, then
 # get all the corresponding data. but some banks dont have 20 date observations which reduce the total number. The latter, 
 # at each date, we measure the 600 largest and keep only these value so obviously we have more date. 
 
+m13a = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans + bhcid,
+        data = panel600)
+m13b = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans + date,
+         data = panel600)
+m13c = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans + bhcid + date,
+          data = panel600)
 
+m14a = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans + bhcid,
+          data = panelSmall)
+m14b = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans + date,
+          data = panelSmall)
+m14c = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans + bhcid + date,
+          data = panelSmall)
 
+m15a = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans + bhcid,
+          data = panelBigMidVar)
+m15b = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans + date,
+          data = panelBigMidVar)
+m15c = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans + bhcid + date,
+          data = panelBigMidVar)
 
-
+m16a = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans + bhcid,
+          data = panelSmallVar)
+m16b = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans + date,
+          data = panelSmallVar)
+m16c = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans + bhcid + date,
+          data = panelSmallVar)
 
