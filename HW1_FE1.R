@@ -4,7 +4,11 @@ library( plm )
 library( dplyr )
 library(binsreg)
 library(ggplot2)
+library(fixest)
 source("All_functions.R")
+
+result2 = banksAsLiquidityProvider( dateStart = "1997-03-31", dateEnd = "2013-12-31" ) 
+result1 = banksAsLiquidityProvider( dateStart = "1992-03-31", dateEnd = "1996-12-31" ) 
 
 # author Maxime Borel
 
@@ -85,12 +89,12 @@ t1 = cbind(rbind(quantile(crossSectionalTimeAveraged$LIQRAT, probs = q, na.rm = 
                  quantile(cstaSmall$DEPRAT, probs = q, na.rm = TRUE),
                  quantile(cstaSmall$COMRAT, probs = q, na.rm = TRUE)))
 rownames(t1) = c("Full", "Big", "Mid", "Small")
-t1 = round(as.data.frame(t1), digits = 3)
+tabI = round(as.data.frame(t1), digits = 3)
 
-rm(df9296)
+rm(df9296, t1)
 
 ######### Q2 #########
-
+######## Table III #########
 m1 = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
         data = crossSectionalTimeAveraged)
 res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "All Banks")
@@ -190,6 +194,7 @@ res4 = summaryOLS(m1, cstaSmall, 2, c("DEPRAT", "COMRAT"), "Small Banks")
 
 tabIV = cbind( res1, res2, res3, res4)
 
+# remove controle variables
 m1 = lm(COMRAT ~ DEPRAT,
         data = crossSectionalTimeAveraged)
 res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "COMRAT"), "All Banks")
@@ -208,175 +213,150 @@ res4 = summaryOLS(m1, cstaSmall, 2, c("DEPRAT", "COMRAT"), "Small Banks")
 
 tabIVNoControl = cbind( res1, res2, res3, res4)
 
+rm( m1, res1, res2, res3, res4, tabIIIa, tabIIIb)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-m1 = lm(LIQRAT ~ DEPRAT,
-        data = crossSectionalTimeAveraged)
-res2 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m1NoConrtols")
-
-m1 = lm(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
-        data = crossSectionalTimeAveraged)
-res3 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m2")
-
-m1 = lm(SECRAT ~ DEPRAT,
-                  data = crossSectionalTimeAveraged)
-res4 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m2NoConrtols")
-
-####################
-m1 = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
-        data = cstaBig)
-res5 = summaryOLS(m1, cstaBig, 2, c("DEPRAT", "LIQRAT"), "m1")
-m1 = lm(LIQRAT ~ DEPRAT,
-                  data = cstaBig)
-res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m1")
-
-
-m1 = lm(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
-        data = cstaBig)
-res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m1")
-m1 = lm(SECRAT ~ DEPRAT,
-                  data = cstaBig)
-res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m1")
-
-####################
-m1 = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
-        data = cstaMid)
-res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m1")
-
-m1 = lm(LIQRAT ~ DEPRAT,
-                  data = cstaMid)
-res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m1")
-
-m1 = lm(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
-        data = cstaMid)
-res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m1")
-
-m1 = lm(SECRAT ~ DEPRAT,
-                  data = cstaMid)
-res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m1")
-
-####################
-m1 = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
-        data = cstaSmall)
-res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m1")
-
-m1 = lm(LIQRAT ~ DEPRAT,
-                  data = cstaSmall)
-res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m1")
-
-
-m1 = lm(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
-        data = cstaSmall)
-res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m1")
-
-m1 = lm(SECRAT ~ DEPRAT,
-                  data = cstaSmall)
-res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m1")
-
-####################
-#######################
-m1 = lm(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
-        data = crossSectionalTimeAveraged)
-res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m1")
-
-m1 = lm(COMRAT ~ DEPRAT,
-                  data = crossSectionalTimeAveraged)
-res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m1")
-
-####################
-m1 = lm(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
-        data = cstaBig)
-res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m1")
-m1 = lm(COMRAT ~ DEPRAT,
-                  data = cstaBig)
-res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m1")
-
-
-####################
-m1 = lm(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
-        data = cstaMid)
-res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m1")
-
-m1 = lm(COMRAT ~ DEPRAT,
-                  data = cstaMid)
-res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m1")
-
-
-####################
-m1 = lm(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
-        data = cstaSmall)
-res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m1")
-
-m1 = lm(COMRAT ~ DEPRAT,
-                  data = cstaSmall)
-res1 = summaryOLS(m1, crossSectionalTimeAveraged, 2, c("DEPRAT", "LIQRAT"), "m1")
-
-######### Q3
+######### Q3 ##########
 binsreg(crossSectionalTimeAveraged$LIQRAT, crossSectionalTimeAveraged$DEPRAT)
 
 plot(crossSectionalTimeAveraged$LIQRAT, crossSectionalTimeAveraged$DEPRAT, 
      xlab="DEPRAT", ylab="LIQRAT", pch=19, col = "blue", cex = 0.2)
 
-######### Q4
+######### Q4 #########
 # get the 600 largest banks, either I take the 600 largest using the average over time which induce bias in result or at each date, 
 # I select the 600 largest which might have more than 600 different bank but still at each date they are the largest 
 
+# construct the dataset with the 600 largest based on average and the samll one
 panel600 = dt[ dt$bhcid %in% c( unique( cstaBig$bhcid ), unique( cstaMid$bhcid ) ), ]
 panelSmall = dt[ dt$bhcid %in% unique( cstaSmall$bhcid ), ]
+rm(crossSectionalTimeAveraged, cstaBig, cstaMid, cstaSmall, filteredData)
 
-panelBigMidVar = dt %>%
-  group_by( date ) %>%
-  arrange( desc( ASSET ) ) %>%
-  slice( 1:600 ) %>%
-  ungroup() 
+# construct the dataset for 600 and smallest banks with the largest at each date, the issue with that is that it is not comparable
+#with above 
+#panelBigMidVar = dt %>%
+#  group_by( date ) %>%
+#  arrange( desc( ASSET ) ) %>%
+#  slice( 1:600 ) %>%
+#  ungroup() 
 
-panelSmallVar = dt %>%
-  group_by( date ) %>%
-  arrange( desc( ASSET ) ) %>%
-  slice( 601:nbrOfFirms ) %>%
-  ungroup()
+#panelSmallVar = dt %>%
+#  group_by( date ) %>%
+#  arrange( desc( ASSET ) ) %>%
+#  slice( 601:nbrOfFirms ) %>%
+#  ungroup()
 
 # they dont have the same number of observations. why ? former we said : based on the average select the 600 largest, then
 # get all the corresponding data. but some banks dont have 20 date observations which reduce the total number. The latter, 
 # at each date, we measure the 600 largest and keep only these value so obviously we have more date. 
+# LIQRAT large 
+m1 = feols(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | bhcid,
+        data = panel600 )
+etable(m1, file = "largeBankLIQRATBhcid.tex")
+res1 = summaryfeols(m1, panel600, 2, c("DEPRAT", "LIQRAT"), "Large Banks")
+rm(m1)
+m1 = feols(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | date,
+         data = panel600 )
+etable(m1, file = "largeBankLIQRATDate.tex")
+res2 = summaryfeols(m1, panel600, 2, c("DEPRAT", "LIQRAT"), "Large Banks")
+rm(m1)
+m1 = feols(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | bhcid + date,
+          data = panel600 )
+etable(m1, file = "largeBankLIQRATBhcidDate.tex")
+res3 = summaryfeols(m1, panel600, 2, c("DEPRAT", "LIQRAT"), "Large Banks")
+rm(m1)
 
-m13a = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans + bhcid,
-        data = panel600)
-m13b = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans + date,
-         data = panel600)
-m13c = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans + bhcid + date,
-          data = panel600)
+# LIQRAT small
+m1 = feols(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | bhcid,
+          data = panelSmall )
+etable(m1, file = "smallBankLIQRATBhcid.tex")
+res4 = summaryfeols(m1, panelSmall, 2, c("DEPRAT", "LIQRAT"), "Small Banks")
+rm(m1)
+m1 = feols(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | date,
+          data = panelSmall )
+etable(m1, file = "smallBankLIQRATDate.tex")
+res5 = summaryfeols(m1, panelSmall, 2, c("DEPRAT", "LIQRAT"), "Small Banks")
+rm(m1)
+m1 = feols(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | bhcid + date,
+          data = panelSmall )
+etable(m1, file = "smallBankLIQRATBhcidDate.tex")
+res6 = summaryfeols(m1, panelSmall, 2, c("DEPRAT", "LIQRAT"), "Small Banks")
+rm(m1)
 
-m14a = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans + bhcid,
-          data = panelSmall)
-m14b = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans + date,
-          data = panelSmall)
-m14c = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans + bhcid + date,
-          data = panelSmall)
+tabIIIba = cbind(rbind(res1, res2, res3), rbind(res4, res5, res6))
 
-m15a = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans + bhcid,
-          data = panelBigMidVar)
-m15b = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans + date,
-          data = panelBigMidVar)
-m15c = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans + bhcid + date,
-          data = panelBigMidVar)
+#SECRAT large
+m1 = feols(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | bhcid,
+        data = panel600 )
+etable(m1, file = "LargeBankSECRATBhcid.tex")
+res1 = summaryfeols(m1, panel600, 2, c("DEPRAT", "SECRAT"), "Large Banks")
+rm(m1)
+m1 = feols(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | date,
+        data = panel600 )
+etable(m1, file = "LargeBankSECRATDate.tex")
+res1 = summaryfeols(m1, panel600, 2, c("DEPRAT", "SECRAT"), "Large Banks")
+rm(m1)
+m1 = feols(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | bhcid + date,
+        data = panel600 )
+etable(m1, file = "LargeBankSECRATBhcidDate.tex")
+res3 = summaryfeols(m1, panel600, 2, c("DEPRAT", "SECRAT"), "Large Banks")
+rm(m1)
 
-m16a = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans + bhcid,
-          data = panelSmallVar)
-m16b = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans + date,
-          data = panelSmallVar)
-m16c = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans + bhcid + date,
-          data = panelSmallVar)
+#SECRAT small
+m1 = feols(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | bhcid,
+        data = panelSmall )
+etable(m1, file = "SmallBankSECRATBhcid.tex")
+res4 = summaryfeols(m1, panelSmall, 2, c("DEPRAT", "SECRAT"), "Small Banks")
+rm(m1)
 
+m1 = feols(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | date,
+        data = panelSmall )
+etable(m1, file = "SmallBankSECRATDate.tex")
+res5 = summaryfeols(m1, panelSmall, 2, c("DEPRAT", "SECRAT"), "Small Banks")
+rm(m1)
+
+m1 = feols(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | bhcid + date,
+        data = panelSmall )
+etable(m1, file = "SmallBankSECRATBhcidDate.tex")
+res6 = summaryfeols(m1, panelSmall, 2, c("DEPRAT", "SECRAT"), "Small Banks")
+rm(m1)
+
+tabIIIbb = cbind(rbind(res1, res2, res3), rbind(res4, res5, res6))
+tabIIIFE = rbind(tabIIIba, tabIIIbb)
+rm(tabIIIba, tabIIIbb)
+
+#COMRAT large
+m1 = feols(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | bhcid,
+        data = panel600 )
+etable(m1, file = "LargeBankCOMRATBhcid.tex")
+res1 = summaryfeols(m1, panel600, 2, c("DEPRAT", "COMRAT"), "Large Banks")
+rm(m1)
+m1 = feols(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | date,
+        data = panel600 )
+etable(m1, file = "LargeBankCOMRATDate.tex")
+res2 = summaryfeols(m1, panel600, 2, c("DEPRAT", "COMRAT"), "Large Banks")
+rm(m1)
+m1 = feols(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | bhcid + date,
+        data = panel600 )
+etable(m1, file = "LargeBankCOMRATBhcidDate.tex")
+res3 = summaryfeols(m1, panel600, 2, c("DEPRAT", "COMRAT"), "Large Banks")
+rm(m1)
+
+#COMRAT small
+m1 = feols(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | bhcid,
+        data = panelSmall)
+etable(m1, file = "SmallBankCOMRATBhcid.tex")
+res4 = summaryfeols(m1, panelSmall, 2, c("DEPRAT", "COMRAT"), "Small Banks")
+rm(m1)
+m1 = feols(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | date,
+        data = panelSmall)
+etable(m1, file = "SmallBankCOMRATDate.tex")
+res5 = summaryfeols(m1, panelSmall, 2, c("DEPRAT", "COMRAT"), "Small Banks")
+rm(m1)
+m1 = feols(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | bhcid + date,
+        data = panelSmall)
+etable(m1, file = "SmallBankCOMRATBhcidDate.tex")
+res6 = summaryfeols(m1, panelSmall, 2, c("DEPRAT", "COMRAT"), "Small Banks")
+rm(m1)
+tabIVb = cbind(rbind(res1, res2, res3), rbind(res4, res5, res6))
+
+
+result = list(tabI, tabIII, tabIIINoControl, tabIIIFE, tabIV, tabIVNoControl, tabIVb)

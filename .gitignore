@@ -7,3 +7,6 @@ PS1_data/callrep_ps.sas
 PS1_data/callreports_1976_2021wc.csv
 PS1_data/callreports_1976_2021wc.dta
 dT.RData
+.vscode/settings.json
+*.json
+*.tex
