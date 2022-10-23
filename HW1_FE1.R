@@ -14,11 +14,13 @@ result1 = banksAsLiquidityProvider( dateStart = "1992-03-31", dateEnd = "1996-12
 
 pnl<- read.csv( "PS1_data/callreports_1976_2021wc.csv" ) # read the data
 pnl$date = strptime(pnl$date, format = "%Y%m%d")
-df9296 = pnl[pnl$date>="1992-03-31" & pnl$date<="1996-12-31", c("date", "rssdid", "bhcid", "chartertype",
+df9296 = pnl[pnl$date>="1997-03-31" & pnl$date<="2013-12-31", c("date", "rssdid", "bhcid", "chartertype",
                                                                 "fedfundsrepoasset", "securities","assets",
                                                                 "cash", "transdep", "deposits", "commitments",
                                                                 "loans","ciloans", "persloans", "reloans")]
-
+if (sum(is.na(df9296$bhcid))>0){
+  df9296$bhcid[is.na(df9296$bhcid)] = 0
+}
 df9296$bhcid[df9296$bhcid==0] = df9296$rssdid[df9296$bhcid==0]
 
 # find the all possible chartertype

@@ -57,7 +57,9 @@ banksAsLiquidityProvider = function( dateStart, dateEnd){
                                                                   "fedfundsrepoasset", "securities","assets",
                                                                   "cash", "transdep", "deposits", "commitments",
                                                                   "loans","ciloans", "persloans", "reloans")]
-  
+  if (sum(is.na(df9296$bhcid))>0){
+    df9296$bhcid[is.na(df9296$bhcid)] = 0
+  }
   df9296$bhcid[df9296$bhcid==0] = df9296$rssdid[df9296$bhcid==0]
   
   # find the all possible chartertype
