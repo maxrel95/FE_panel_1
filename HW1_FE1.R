@@ -7,14 +7,15 @@ library(ggplot2)
 library(fixest)
 source("All_functions.R")
 
-result2 = banksAsLiquidityProvider( dateStart = "1997-03-31", dateEnd = "2013-12-31" ) 
+
 result1 = banksAsLiquidityProvider( dateStart = "1992-03-31", dateEnd = "1996-12-31" ) 
+result2 = banksAsLiquidityProvider( dateStart = "1997-03-31", dateEnd = "2013-12-31" ) 
 
 # author Maxime Borel
 
 pnl<- read.csv( "PS1_data/callreports_1976_2021wc.csv" ) # read the data
 pnl$date = strptime(pnl$date, format = "%Y%m%d")
-df9296 = pnl[pnl$date>="1997-03-31" & pnl$date<="2013-12-31", c("date", "rssdid", "bhcid", "chartertype",
+df9296 = pnl[pnl$date>="1992-03-31" & pnl$date<="1996-12-31", c("date", "rssdid", "bhcid", "chartertype",
                                                                 "fedfundsrepoasset", "securities","assets",
                                                                 "cash", "transdep", "deposits", "commitments",
                                                                 "loans","ciloans", "persloans", "reloans")]
@@ -29,10 +30,10 @@ chartertype = unique(df9296$chartertype)
 filteredData = df9296%>%
   filter(chartertype==200 | chartertype==300 | chartertype==320 | chartertype==340)%>%
   group_by(bhcid, date ) %>%
-  summarise(fedfundsrepoasset=sum(fedfundsrepoasset), securities=sum(securities), assets=sum(assets),
-            cash=sum(cash), transdep=sum(transdep),  deposits=sum(deposits),
-            commitments=sum(commitments),  loans=sum(loans),
-            ciloans=sum(ciloans), persloans=sum(persloans) , reloans=sum(reloans))%>%
+  summarise(fedfundsrepoasset=sum(fedfundsrepoasset, na.rm = T), securities=sum(securities, na.rm = T), assets=sum(assets, na.rm = T),
+            cash=sum(cash, na.rm = T), transdep=sum(transdep, na.rm = T),  deposits=sum(deposits, na.rm = T),
+            commitments=sum(commitments, na.rm = T),  loans=sum(loans, na.rm = T),
+            ciloans=sum(ciloans, na.rm = T), persloans=sum(persloans, na.rm = T) , reloans=sum(reloans, na.rm = T))%>%
   ungroup()%>%
   group_by(bhcid) %>%
   filter(n()>=8) %>%
@@ -58,7 +59,7 @@ crossSectionalTimeAveraged = dt %>%
   as.data.frame() %>%
   group_by(bhcid) %>%
   summarise(LIQRAT=mean(LIQRAT, na.rm=TRUE), SECRAT=mean(SECRAT, na.rm=TRUE), DEPRAT=mean(DEPRAT, na.rm=TRUE),
-            COMRAT=mean(COMRAT, na.rm=TRUE), ASSET=mean(ASSET, na.rm=TRUE),ciloans=mean(ciloans, na.rm=TRUE),
+            COMRAT=mean(COMRAT, na.rm=TRUE), ASSET=mean(ASSET, na.rm=TRUE), ciloans=mean(ciloans, na.rm=TRUE),
             persloans=mean(persloans, na.rm=TRUE), reloans=mean(reloans, na.rm=TRUE)) %>%
   ungroup()
 
@@ -90,7 +91,7 @@ t1 = cbind(rbind(quantile(crossSectionalTimeAveraged$LIQRAT, probs = q, na.rm = 
                  quantile(cstaSmall$SECRAT, probs = q, na.rm = TRUE),
                  quantile(cstaSmall$DEPRAT, probs = q, na.rm = TRUE),
                  quantile(cstaSmall$COMRAT, probs = q, na.rm = TRUE)))
-rownames(t1) = c("Full", "Big", "Mid", "Small")
+rownames(t1) = c("LIQRAT", "SECRAT", "DEPRAT", "COMRAT")
 tabI = round(as.data.frame(t1), digits = 3)
 
 rm(df9296, t1)
@@ -232,6 +233,7 @@ panel600 = dt[ dt$bhcid %in% c( unique( cstaBig$bhcid ), unique( cstaMid$bhcid )
 panelSmall = dt[ dt$bhcid %in% unique( cstaSmall$bhcid ), ]
 rm(crossSectionalTimeAveraged, cstaBig, cstaMid, cstaSmall, filteredData)
 
+
 # construct the dataset for 600 and smallest banks with the largest at each date, the issue with that is that it is not comparable
 #with above 
 #panelBigMidVar = dt %>%
@@ -359,6 +361,3 @@ etable(m1, file = "SmallBankCOMRATBhcidDate.tex")
 res6 = summaryfeols(m1, panelSmall, 2, c("DEPRAT", "COMRAT"), "Small Banks")
 rm(m1)
 tabIVb = cbind(rbind(res1, res2, res3), rbind(res4, res5, res6))
-
-
-result = list(tabI, tabIII, tabIIINoControl, tabIIIFE, tabIV, tabIVNoControl, tabIVb)
