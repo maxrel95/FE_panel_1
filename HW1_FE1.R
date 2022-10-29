@@ -5,8 +5,11 @@ library( dplyr )
 library(binsreg)
 library(ggplot2)
 library(fixest)
+library(stargazer)
+library(starpolishr)
 source("All_functions.R")
 
+load("~/Documents/Université/HEC/PhD/6.1/FE I/HW3/.RData")
 
 result1 = banksAsLiquidityProvider( dateStart = "1992-03-31", dateEnd = "1996-12-31" ) 
 result2 = banksAsLiquidityProvider( dateStart = "1997-03-31", dateEnd = "2013-12-31" ) 
@@ -115,6 +118,28 @@ m1 = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
 res4 = summaryOLS(m1, cstaSmall, 2, c("DEPRAT", "LIQRAT"), "Small Banks")
 
 tabIIIa = cbind( res1, res2, res3, res4)
+
+#
+m1 = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+        data = crossSectionalTimeAveraged)
+m2 = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+        data = cstaBig)
+m3 = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+        data = cstaMid)
+m4 = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+        data = cstaSmall)
+star.panel1 = stargazer(m1, m2, m3, m4)
+
+m1a = lm(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+        data = crossSectionalTimeAveraged)
+m2b = lm(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+        data = cstaBig)
+m3c = lm(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+        data = cstaMid)
+m4d = lm(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+        data = cstaSmall)
+star.panel2 = stargazer( m1a, m2b, m3c, m4d)
+##
 
 
 m1 = lm(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
