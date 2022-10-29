@@ -31,6 +31,7 @@ df9296$bhcid[df9296$bhcid==0] = df9296$rssdid[df9296$bhcid==0]
 chartertype = unique(df9296$chartertype)
 
 filteredData = df9296%>%
+  na.omit()%>%
   filter(chartertype==200 | chartertype==300 | chartertype==320 | chartertype==340)%>%
   group_by(bhcid, date ) %>%
   summarise(fedfundsrepoasset=sum(fedfundsrepoasset, na.rm = T), securities=sum(securities, na.rm = T), assets=sum(assets, na.rm = T),
@@ -59,12 +60,16 @@ dt[, persloans:=filteredData$persloans/filteredData$loans]
 dt[, reloans:=filteredData$reloans/filteredData$loans]
 
 crossSectionalTimeAveraged = dt %>%
+  na.omit()%>%
   as.data.frame() %>%
   group_by(bhcid) %>%
   summarise(LIQRAT=mean(LIQRAT, na.rm=TRUE), SECRAT=mean(SECRAT, na.rm=TRUE), DEPRAT=mean(DEPRAT, na.rm=TRUE),
             COMRAT=mean(COMRAT, na.rm=TRUE), ASSET=mean(ASSET, na.rm=TRUE), ciloans=mean(ciloans, na.rm=TRUE),
             persloans=mean(persloans, na.rm=TRUE), reloans=mean(reloans, na.rm=TRUE)) %>%
   ungroup()
+
+nbrOfFirms = length(unique(crossSectionalTimeAveraged$bhcid))
+
 
 cstaBig = crossSectionalTimeAveraged %>%
   arrange(desc(ASSET)) %>%
@@ -139,6 +144,9 @@ m3c = lm(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
 m4d = lm(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
         data = cstaSmall)
 star.panel2 = stargazer( m1a, m2b, m3c, m4d)
+star.panel.out = star_panel(star.panel1, star.panel2, panel.names = c("LIQRAT", "SECRAT"))
+star_tex_write(star.panel.out, file = "tabIIIba.tex", headers = TRUE)
+
 ##
 
 
@@ -244,10 +252,19 @@ tabIVNoControl = cbind( res1, res2, res3, res4)
 rm( m1, res1, res2, res3, res4, tabIIIa, tabIIIb)
 
 ######### Q3 ##########
-binsreg(crossSectionalTimeAveraged$LIQRAT, crossSectionalTimeAveraged$DEPRAT)
+binsreg(y = LIQRAT, x= DEPRAT
+        , w = ~ASSET + ciloans + persloans + reloans,
+        data = as.data.frame( crossSectionalTimeAveraged),
+         nbins = 50,
+        vce = "HC3")
+ggsave(file="binsreg9296.png")
+dev.off()
 
+png(file="scatter9296.png")
 plot(crossSectionalTimeAveraged$LIQRAT, crossSectionalTimeAveraged$DEPRAT, 
      xlab="DEPRAT", ylab="LIQRAT", pch=19, col = "blue", cex = 0.2)
+dev.off()
+
 
 ######### Q4 #########
 # get the 600 largest banks, either I take the 600 largest using the average over time which induce bias in result or at each date, 

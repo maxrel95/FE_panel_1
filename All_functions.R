@@ -67,6 +67,7 @@ banksAsLiquidityProvider = function( dateStart, dateEnd){
   chartertype = unique(df9296$chartertype)
   
   filteredData = df9296%>%
+    na.omit() %>%
     filter(chartertype==200 | chartertype==300 | chartertype==320 | chartertype==340)%>%
     group_by(bhcid, date ) %>%
     summarise(fedfundsrepoasset=sum(fedfundsrepoasset), securities=sum(securities), assets=sum(assets),
@@ -95,6 +96,7 @@ banksAsLiquidityProvider = function( dateStart, dateEnd){
   dt[, reloans:=filteredData$reloans/filteredData$loans]
   
   crossSectionalTimeAveraged = dt %>%
+    na.omit() %>%
     as.data.frame() %>%
     group_by(bhcid) %>%
     summarise(LIQRAT=mean(LIQRAT, na.rm=TRUE), SECRAT=mean(SECRAT, na.rm=TRUE), DEPRAT=mean(DEPRAT, na.rm=TRUE),
@@ -258,10 +260,18 @@ banksAsLiquidityProvider = function( dateStart, dateEnd){
   rm( m1, res1, res2, res3, res4, tabIIIa, tabIIIb)
   
   ######### Q3 ##########
-  binsreg(crossSectionalTimeAveraged$LIQRAT, crossSectionalTimeAveraged$DEPRAT)
+  binsreg(y = LIQRAT, x= DEPRAT
+          , w = ~ASSET + ciloans + persloans + reloans,
+          data = as.data.frame( crossSectionalTimeAveraged),
+          nbins = 50,
+          vce = "HC3")
+  ggsave(file = paste(dateToUse,"binsreg.png", sep = ""))
+  dev.off()
   
+  png(file = paste(dateToUse,"scatter.png", sep = ""))
   plot(crossSectionalTimeAveraged$LIQRAT, crossSectionalTimeAveraged$DEPRAT, 
        xlab="DEPRAT", ylab="LIQRAT", pch=19, col = "blue", cex = 0.2)
+  dev.off()
   
   ######### Q4 #########
   # get the 600 largest banks, either I take the 600 largest using the average over time which induce bias in result or at each date, 
