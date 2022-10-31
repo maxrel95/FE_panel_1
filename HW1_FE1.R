@@ -14,8 +14,6 @@ load("~/Documents/Université/HEC/PhD/6.1/FE I/HW3/.RData")
 result1 = banksAsLiquidityProvider( dateStart = "1992-03-31", dateEnd = "1996-12-31" ) 
 result2 = banksAsLiquidityProvider( dateStart = "1997-03-31", dateEnd = "2013-12-31" ) 
 
-# author Maxime Borel
-
 pnl<- read.csv( "PS1_data/callreports_1976_2021wc.csv" ) # read the data
 pnl$date = strptime(pnl$date, format = "%Y%m%d")
 df9296 = pnl[pnl$date>="1992-03-31" & pnl$date<="1996-12-31", c("date", "rssdid", "bhcid", "chartertype",
@@ -298,36 +296,31 @@ m1 = feols(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | bhcid,
         data = panel600 )
 etable(m1, file = "largeBankLIQRATBhcid.tex")
 res1 = summaryfeols(m1, panel600, 2, c("DEPRAT", "LIQRAT"), "Large Banks")
-rm(m1)
-m1 = feols(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | date,
+m2 = feols(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | date,
          data = panel600 )
-etable(m1, file = "largeBankLIQRATDate.tex")
-res2 = summaryfeols(m1, panel600, 2, c("DEPRAT", "LIQRAT"), "Large Banks")
-rm(m1)
-m1 = feols(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | bhcid + date,
+etable(m2, file = "largeBankLIQRATDate.tex")
+res2 = summaryfeols(m2, panel600, 2, c("DEPRAT", "LIQRAT"), "Large Banks")
+m3 = feols(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | bhcid + date,
           data = panel600 )
-etable(m1, file = "largeBankLIQRATBhcidDate.tex")
-res3 = summaryfeols(m1, panel600, 2, c("DEPRAT", "LIQRAT"), "Large Banks")
-rm(m1)
+etable(m3, file = "largeBankLIQRATBhcidDate.tex")
+res3 = summaryfeols(m3, panel600, 2, c("DEPRAT", "LIQRAT"), "Large Banks")
 
 # LIQRAT small
-m1 = feols(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | bhcid,
+m4 = feols(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | bhcid,
           data = panelSmall )
-etable(m1, file = "smallBankLIQRATBhcid.tex")
-res4 = summaryfeols(m1, panelSmall, 2, c("DEPRAT", "LIQRAT"), "Small Banks")
-rm(m1)
-m1 = feols(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | date,
+etable(m4, file = "smallBankLIQRATBhcid.tex")
+res4 = summaryfeols(m4, panelSmall, 2, c("DEPRAT", "LIQRAT"), "Small Banks")
+m5 = feols(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | date,
           data = panelSmall )
-etable(m1, file = "smallBankLIQRATDate.tex")
-res5 = summaryfeols(m1, panelSmall, 2, c("DEPRAT", "LIQRAT"), "Small Banks")
-rm(m1)
-m1 = feols(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | bhcid + date,
+etable(m5, file = "smallBankLIQRATDate.tex")
+res5 = summaryfeols(m5, panelSmall, 2, c("DEPRAT", "LIQRAT"), "Small Banks")
+m6 = feols(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | bhcid + date,
           data = panelSmall )
-etable(m1, file = "smallBankLIQRATBhcidDate.tex")
-res6 = summaryfeols(m1, panelSmall, 2, c("DEPRAT", "LIQRAT"), "Small Banks")
-rm(m1)
+etable(m6, file = "smallBankLIQRATBhcidDate.tex")
+res6 = summaryfeols(m6, panelSmall, 2, c("DEPRAT", "LIQRAT"), "Small Banks")
 
 tabIIIba = cbind(rbind(res1, res2, res3), rbind(res4, res5, res6))
+etable(m1,m2, m3, m4, m5, m6, file = "resumeFELargeSmall.tex")
 
 #SECRAT large
 m1 = feols(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | bhcid,
