@@ -1,15 +1,12 @@
 library(data.table) 
-library(readxl)
-library( plm )
 library( dplyr )
 library(binsreg)
 library(ggplot2)
 library(fixest)
 library(stargazer)
-library(starpolishr)
 source("All_functions.R")
 
-load("~/Documents/Université/HEC/PhD/6.1/FE I/HW3/.RData")
+#load("~/Documents/Université/HEC/PhD/6.1/FE I/HW3/.RData")
 
 # I built a function that takes as input the period of interest. The user need to provide the starting date
 # and the end date of the analysis period. You can see the rest of the code in the file "All_functions.R"

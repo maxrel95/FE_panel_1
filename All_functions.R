@@ -268,9 +268,9 @@ banksAsLiquidityProvider = function( dateStart, dateEnd){
   
   ######### Q4 #########
   # construct panel datq with the 600 largest banks based on the bhcid in big ans mid bank category from above
-  panel600 = dt[ dt$bhcid %in% c( unique( cstaBig$bhcid ), unique( cstaMid$bhcid ) ), ]
-  panelSmall = dt[ dt$bhcid %in% unique( cstaSmall$bhcid ), ] # remaining banks 
-  rm(crossSectionalTimeAveraged, cstaBig, cstaMid, cstaSmall, filteredData)
+  panel600 = dt[ dt$bhcid %in% c( unique( cstaBig$bhcid ), unique( cstaMid$bhcid ) ), ] %>% na.omit()
+  panelSmall = dt[ dt$bhcid %in% unique( cstaSmall$bhcid ), ] %>% na.omit() # remaining banks 
+  rm(crossSectionalTimeAveraged, cstaBig, cstaMid, cstaSmall)
   
   # construct the dataset for 600 and smallest banks with the largest at each date, the issue with that is that it is not comparable
   #with above 
@@ -296,107 +296,107 @@ banksAsLiquidityProvider = function( dateStart, dateEnd){
   # regress LIQRAT on DEPRAT with control variables and bhcid as fixed effect  on the 600 largest banks
   m1 = feols(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | bhcid,
              data = panel600 )
-  etable(m1, file = paste(dateToUse,"largeBankLIQRATBhcid.tex", sep = "")) 
+  etable(m1, file = paste("Output/", dateToUse,"largeBankLIQRATBhcid.tex", sep = "")) 
   res1 = summaryfeols(m1, panel600, c("DEPRAT", "LIQRAT"), "Large Banks") # same as for time averaged reg but adapted to the output of feols
 
   m2 = feols(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | date,
              data = panel600 ) # same as above except that FE are date
-  etable(m2, file = paste(dateToUse,"largeBankLIQRATDate.tex", sep = ""))
+  etable(m2, file = paste("Output/", dateToUse,"largeBankLIQRATDate.tex", sep = ""))
   res2 = summaryfeols(m2, panel600, c("DEPRAT", "LIQRAT"), "Large Banks")
 
   m3 = feols(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | bhcid + date,
              data = panel600 ) # same regression except that FE are bhcid and date
-  etable(m3, file = paste(dateToUse,"largeBankLIQRATBhcidDate.tex", sep = ""))
+  etable(m3, file = paste("Output/", dateToUse,"largeBankLIQRATBhcidDate.tex", sep = ""))
   res3 = summaryfeols(m3, panel600, c("DEPRAT", "LIQRAT"), "Large Banks")
 
   # LIQRAT small
   m4 = feols(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | bhcid,
              data = panelSmall )
-  etable(m3, file = paste(dateToUse,"smallBankLIQRATBhcid.tex", sep = ""))
+  etable(m3, file = paste("Output/", dateToUse,"smallBankLIQRATBhcid.tex", sep = ""))
   res4 = summaryfeols(m3, panelSmall, c("DEPRAT", "LIQRAT"), "Small Banks")
 
   m5 = feols(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | date,
              data = panelSmall )
-  etable(m5, file = paste(dateToUse,"smallBankLIQRATDate.tex", sep = ""))
+  etable(m5, file = paste("Output/", dateToUse,"smallBankLIQRATDate.tex", sep = ""))
   res5 = summaryfeols(m5, panelSmall, c("DEPRAT", "LIQRAT"), "Small Banks")
 
   m6 = feols(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | bhcid + date,
              data = panelSmall )
-  etable(m6, file = paste(dateToUse,"smallBankLIQRATBhcidDate.tex", sep = ""))
+  etable(m6, file = paste("Output/", dateToUse,"smallBankLIQRATBhcidDate.tex", sep = ""))
   res6 = summaryfeols(m6, panelSmall, c("DEPRAT", "LIQRAT"), "Small Banks")
 
-  etable(m1,m2, m3, m4, m5, m6, file = paste(dateToUse, "resumeFELargeSmallLIQRAT.tex", sep = "")) # save outpout of multiple reg
+  etable(m1,m2, m3, m4, m5, m6, file = paste("Output/", dateToUse, "resumeFELargeSmallLIQRAT.tex", sep = "")) # save outpout of multiple reg
   tabIIIba = cbind(rbind(res1, res2, res3), rbind(res4, res5, res6)) # table of results with beta coeff, tstat and explanatory power
   
   #SECRAT large, change the dependent variables here it is SECRAT
   m1 = feols(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | bhcid,
              data = panel600 )
-  etable(m1, file = paste(dateToUse,"LargeBankSECRATBhcid.tex", sep = ""))
+  etable(m1, file = paste("Output/", dateToUse,"LargeBankSECRATBhcid.tex", sep = ""))
   res1 = summaryfeols(m1, panel600, c("DEPRAT", "SECRAT"), "Large Banks")
   
   m2 = feols(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | date,
              data = panel600 )
-  etable(m2, file = paste(dateToUse,"LargeBankSECRATDate.tex", sep = ""))
+  etable(m2, file = paste("Output/", dateToUse,"LargeBankSECRATDate.tex", sep = ""))
   res1 = summaryfeols(m1, panel600, c("DEPRAT", "SECRAT"), "Large Banks")
   
   m3 = feols(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | bhcid + date,
              data = panel600 )
-  etable(m3, file = paste(dateToUse,"LargeBankSECRATBhcidDate.tex", sep = ""))
+  etable(m3, file = paste("Output/", dateToUse,"LargeBankSECRATBhcidDate.tex", sep = ""))
   res3 = summaryfeols(m1, panel600, c("DEPRAT", "SECRAT"), "Large Banks")
   
   #SECRAT small
   m4 = feols(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | bhcid,
              data = panelSmall )
-  etable(m4, file = paste(dateToUse,"SmallBankSECRATBhcid.tex", sep = ""))
+  etable(m4, file = paste("Output/", dateToUse,"SmallBankSECRATBhcid.tex", sep = ""))
   res4 = summaryfeols(m1, panelSmall, c("DEPRAT", "SECRAT"), "Small Banks")
   
   m5 = feols(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | date,
              data = panelSmall )
-  etable(m5, file = paste(dateToUse,"SmallBankSECRATDate.tex", sep = ""))
+  etable(m5, file = paste("Output/", dateToUse,"SmallBankSECRATDate.tex", sep = ""))
   res5 = summaryfeols(m1, panelSmall, c("DEPRAT", "SECRAT"), "Small Banks")
   
   m6 = feols(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | bhcid + date,
              data = panelSmall )
-  etable(m6, file = paste(dateToUse,"SmallBankSECRATBhcidDate.tex", sep = ""))
+  etable(m6, file = paste("Output/", dateToUse,"SmallBankSECRATBhcidDate.tex", sep = ""))
   res6 = summaryfeols(m1, panelSmall, c("DEPRAT", "SECRAT"), "Small Banks")
 
   tabIIIbb = cbind(rbind(res1, res2, res3), rbind(res4, res5, res6))
   tabIIIFE = rbind(tabIIIba, tabIIIbb)
   
-  etable(m1,m2, m3, m4, m5, m6, file = paste(dateToUse, "resumeFELargeSmallSECRAT.tex", sep = ""))
+  etable(m1,m2, m3, m4, m5, m6, file = paste("Output/", dateToUse, "resumeFELargeSmallSECRAT.tex", sep = ""))
   
   rm(tabIIIba, tabIIIbb)
   
   #COMRAT large, change the dependent variable here it is COMRAT
   m1 = feols(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | bhcid,
              data = panel600 )
-  etable(m1, file = paste(dateToUse,"LargeBankCOMRATBhcid.tex", sep = ""))
+  etable(m1, file = paste("Output/", dateToUse,"LargeBankCOMRATBhcid.tex", sep = ""))
   res1 = summaryfeols(m1, panel600, c("DEPRAT", "COMRAT"), "Large Banks")
 
   m2 = feols(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | date,
              data = panel600 )
-  etable(m2, file = paste(dateToUse,"LargeBankCOMRATDate.tex", sep = ""))
+  etable(m2, file = paste("Output/", dateToUse,"LargeBankCOMRATDate.tex", sep = ""))
   res2 = summaryfeols(m2, panel600, c("DEPRAT", "COMRAT"), "Large Banks")
 
   m3 = feols(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | bhcid + date,
              data = panel600 )
-  etable(m3, file = paste(dateToUse,"LargeBankCOMRATBhcidDate.tex", sep = ""))
+  etable(m3, file = paste("Output/", dateToUse,"LargeBankCOMRATBhcidDate.tex", sep = ""))
   res3 = summaryfeols(m3, panel600, c("DEPRAT", "COMRAT"), "Large Banks")
   
   #COMRAT small
   m4 = feols(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | bhcid,
              data = panelSmall)
-  etable(m4, file = paste(dateToUse,"SmallBankCOMRATBhcid.tex", sep = ""))
+  etable(m4, file = paste("Output/", dateToUse,"SmallBankCOMRATBhcid.tex", sep = ""))
   res4 = summaryfeols(m4, panelSmall, c("DEPRAT", "COMRAT"), "Small Banks")
 
   m5 = feols(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | date,
              data = panelSmall)
-  etable(m5, file = paste(dateToUse,"SmallBankCOMRATDate.tex", sep = ""))
+  etable(m5, file = paste("Output/", dateToUse,"SmallBankCOMRATDate.tex", sep = ""))
   res5 = summaryfeols(m5, panelSmall, c("DEPRAT", "COMRAT"), "Small Banks")
 
   m6 = feols(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | bhcid + date,
              data = panelSmall)
-  etable(m6, file = paste(dateToUse,"SmallBankCOMRATBhcidDate.tex", sep = ""))
+  etable(m6, file = paste("Output/", dateToUse,"SmallBankCOMRATBhcidDate.tex", sep = ""))
   res6 = summaryfeols(m6, panelSmall, c("DEPRAT", "COMRAT"), "Small Banks")
 
   tabIVb = cbind(rbind(res1, res2, res3), rbind(res4, res5, res6))
