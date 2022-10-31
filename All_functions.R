@@ -257,13 +257,43 @@ banksAsLiquidityProvider = function( dateStart, dateEnd){
           data = as.data.frame( crossSectionalTimeAveraged),
           nbins = 50, # use 50 point to sum up the whole dataset
           vce = "HC3") # compute covariance with HC3
-  ggsave(file = paste(dateToUse,"binsreg.png", sep = "")) # save fig
+  ggsave(file = paste(dateToUse,"binsregLIQRAT.png", sep = "")) # save fig
   dev.off()
   
   # compute the scatter plot to compare the gain 
-  png(file = paste(dateToUse,"scatter.png", sep = ""))
+  png(file = paste(dateToUse,"scatterLIQRAT.png", sep = ""))
   plot(crossSectionalTimeAveraged$LIQRAT, crossSectionalTimeAveraged$DEPRAT, 
        xlab="DEPRAT", ylab="LIQRAT", pch=19, col = "blue", cex = 0.2)
+  dev.off()
+  
+  # SECRAT
+  binsreg(y = SECRAT, x= DEPRAT
+          , w = ~ASSET + ciloans + persloans + reloans,
+          data = as.data.frame( crossSectionalTimeAveraged),
+          nbins = 50, # use 50 point to sum up the whole dataset
+          vce = "HC3") # compute covariance with HC3
+  ggsave(file = paste(dateToUse,"binsregSECRAT.png", sep = "")) # save fig
+  dev.off()
+  
+  # compute the scatter plot to compare the gain 
+  png(file = paste(dateToUse,"scatterSECRAT.png", sep = ""))
+  plot(crossSectionalTimeAveraged$SECRAT, crossSectionalTimeAveraged$DEPRAT, 
+       xlab="DEPRAT", ylab="SECRAT", pch=19, col = "blue", cex = 0.2)
+  dev.off()
+  
+  # COMRAT
+  binsreg(y = COMRAT, x= DEPRAT
+          , w = ~ASSET + ciloans + persloans + reloans,
+          data = as.data.frame( crossSectionalTimeAveraged),
+          nbins = 50, # use 50 point to sum up the whole dataset
+          vce = "HC3") # compute covariance with HC3
+  ggsave(file = paste(dateToUse,"binsregCOMRAT.png", sep = "")) # save fig
+  dev.off()
+  
+  # compute the scatter plot to compare the gain 
+  png(file = paste(dateToUse,"scatterCOMRAT.png", sep = ""))
+  plot(crossSectionalTimeAveraged$COMRAT, crossSectionalTimeAveraged$DEPRAT, 
+       xlab="DEPRAT", ylab="COMRAT", pch=19, col = "blue", cex = 0.2)
   dev.off()
   
   ######### Q4 #########
