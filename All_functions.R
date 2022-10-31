@@ -399,6 +399,7 @@ banksAsLiquidityProvider = function( dateStart, dateEnd){
   etable(m6, file = paste("Output/", dateToUse,"SmallBankCOMRATBhcidDate.tex", sep = ""))
   res6 = summaryfeols(m6, panelSmall, c("DEPRAT", "COMRAT"), "Small Banks")
 
+  etable(m1,m2, m3, m4, m5, m6, file = paste("Output/", dateToUse, "resumeFELargeSmallCOMRAT.tex", sep = ""))
   tabIVb = cbind(rbind(res1, res2, res3), rbind(res4, res5, res6))
   
   
