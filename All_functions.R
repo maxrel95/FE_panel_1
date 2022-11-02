@@ -3,6 +3,9 @@ library(readxl)
 library( plm )
 library( dplyr )
 library(fixest)
+library(lmtest)
+library(sandwich)
+library(estimatr)
 
 
 summaryOLS = function( model, data, var, name ){
@@ -130,39 +133,39 @@ banksAsLiquidityProvider = function( dateStart, dateEnd){
   
   ######### Q2 #########
   ######## Table III #########
-  m1 = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
-          data = crossSectionalTimeAveraged) # run regression according to formulaon time averaged data for full sample 
+  m1 = lm_robust(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+          data = crossSectionalTimeAveraged, se_type = 'HC1') # run regression according to formulaon time averaged data for full sample 
   res1 = summaryOLS(m1, crossSectionalTimeAveraged, c("DEPRAT", "LIQRAT"), "All Banks") # get beta coeff, tstat and explanatory power  
   
-  m1 = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
-          data = cstaBig) # regression but for big bank
+  m1 = lm_robust(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+          data = cstaBig, se_type = 'HC1') # regression but for big bank
   res2 = summaryOLS(m1, cstaBig, c("DEPRAT", "LIQRAT"), "Large Banks") # get beta coeff, tstat and explanatory power
   
-  m1 = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
-          data = cstaMid) # regression with medium banks
+  m1 = lm_robust(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+          data = cstaMid, se_type = 'HC1') # regression with medium banks
   res3 = summaryOLS(m1, cstaMid, c("DEPRAT", "LIQRAT"), "Medium Banks")
   
-  m1 = lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
-          data = cstaSmall) # regression with small banks
+  m1 = lm_robust(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+          data = cstaSmall, se_type = 'HC1') # regression with small banks
   res4 = summaryOLS(m1, cstaSmall, c("DEPRAT", "LIQRAT"), "Small Banks")
   
   tabIIIa = cbind( res1, res2, res3, res4) # combine result across the size
   
   # same as above from line 132 to 146 but the dependant variable is SECRAT instead of LIQRAT
-  m1 = lm(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
-          data = crossSectionalTimeAveraged)
+  m1 = lm_robust(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+          data = crossSectionalTimeAveraged, se_type = 'HC1')
   res1 = summaryOLS(m1, crossSectionalTimeAveraged, c("DEPRAT", "SECRAT"), "All Banks")
   
-  m1 = lm(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
-          data = cstaBig)
+  m1 = lm_robust(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+          data = cstaBig, se_type = 'HC1')
   res2 = summaryOLS(m1, cstaBig, c("DEPRAT", "SECRAT"), "Large Banks")
   
-  m1 = lm(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
-          data = cstaMid)
+  m1 = lm_robust(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+          data = cstaMid, se_type = 'HC1')
   res3 = summaryOLS(m1, cstaMid, c("DEPRAT", "SECRAT"), "Medium Banks")
   
-  m1 = lm(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
-          data = cstaSmall)
+  m1 = lm_robust(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+          data = cstaSmall, se_type = 'HC1')
   res4 = summaryOLS(m1, cstaSmall, c("DEPRAT", "SECRAT"), "Small Banks")
   
   tabIIIb = cbind( res1, res2, res3, res4)
@@ -170,39 +173,39 @@ banksAsLiquidityProvider = function( dateStart, dateEnd){
   tabIII = rbind( tabIIIa, tabIIIb) # concatenate result to reproduce table III
   
   # same as line 132 to 165 but remove the control variables
-  m1 = lm(LIQRAT ~ DEPRAT,
-          data = crossSectionalTimeAveraged)
+  m1 = lm_robust(LIQRAT ~ DEPRAT,
+          data = crossSectionalTimeAveraged, se_type = 'HC1')
   res1 = summaryOLS(m1, crossSectionalTimeAveraged, c("DEPRAT", "LIQRAT"), "All Banks")
   
-  m1 = lm(LIQRAT ~ DEPRAT,
-          data = cstaBig)
+  m1 = lm_robust(LIQRAT ~ DEPRAT,
+          data = cstaBig, se_type = 'HC1')
   res2 = summaryOLS(m1, cstaBig, c("DEPRAT", "LIQRAT"), "Large Banks")
   
-  m1 = lm(LIQRAT ~ DEPRAT,
-          data = cstaMid)
+  m1 = lm_robust(LIQRAT ~ DEPRAT,
+          data = cstaMid, se_type = 'HC1')
   res3 = summaryOLS(m1, cstaMid, c("DEPRAT", "LIQRAT"), "Medium Banks")
   
-  m1 = lm(LIQRAT ~ DEPRAT,
-          data = cstaSmall)
+  m1 = lm_robust(LIQRAT ~ DEPRAT,
+          data = cstaSmall, se_type = 'HC1')
   res4 = summaryOLS(m1, cstaSmall, c("DEPRAT", "LIQRAT"), "Small Banks")
   
   tabIIIa = cbind( res1, res2, res3, res4)
   
   
-  m1 = lm(SECRAT ~ DEPRAT,
-          data = crossSectionalTimeAveraged)
+  m1 = lm_robust(SECRAT ~ DEPRAT,
+          data = crossSectionalTimeAveraged, se_type = 'HC1')
   res1 = summaryOLS(m1, crossSectionalTimeAveraged, c("DEPRAT", "SECRAT"), "All Banks")
   
-  m1 = lm(SECRAT ~ DEPRAT,
-          data = cstaBig)
+  m1 = lm_robust(SECRAT ~ DEPRAT,
+          data = cstaBig, se_type = 'HC1')
   res2 = summaryOLS(m1, cstaBig, c("DEPRAT", "SECRAT"), "Large Banks")
   
-  m1 = lm(SECRAT ~ DEPRAT,
-          data = cstaMid)
+  m1 = lm_robust(SECRAT ~ DEPRAT,
+          data = cstaMid, se_type = 'HC1')
   res3 = summaryOLS(m1, cstaMid, c("DEPRAT", "SECRAT"), "Medium Banks")
   
-  m1 = lm(SECRAT ~ DEPRAT,
-          data = cstaSmall)
+  m1 = lm_robust(SECRAT ~ DEPRAT,
+          data = cstaSmall, se_type = 'HC1')
   res4 = summaryOLS(m1, cstaSmall, c("DEPRAT", "SECRAT"), "Small Banks")
   
   tabIIIb = cbind( res1, res2, res3, res4)
@@ -211,39 +214,39 @@ banksAsLiquidityProvider = function( dateStart, dateEnd){
   
   ##### Tab IV #######
   # same as for line 132 to 210 but with COMRAT as dependent variable to reproduce the table IV with and without control variables
-  m1 = lm(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
-          data = crossSectionalTimeAveraged)
+  m1 = lm_robust(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+          data = crossSectionalTimeAveraged, se_type = 'HC1')
   res1 = summaryOLS(m1, crossSectionalTimeAveraged, c("DEPRAT", "COMRAT"), "All Banks")
   
-  m1 = lm(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
-          data = cstaBig)
+  m1 = lm_robust(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+          data = cstaBig, se_type = 'HC1')
   res2 = summaryOLS(m1, cstaBig, c("DEPRAT", "COMRAT"), "Large Banks")
   
-  m1 = lm(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
-          data = cstaMid)
+  m1 = lm_robust(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+          data = cstaMid, se_type = 'HC1')
   res3 = summaryOLS(m1, cstaMid, c("DEPRAT", "COMRAT"), "Medium Banks")
   
-  m1 = lm(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
-          data = cstaSmall)
+  m1 = lm_robust(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans,
+          data = cstaSmall, se_type = 'HC1')
   res4 = summaryOLS(m1, cstaSmall, c("DEPRAT", "COMRAT"), "Small Banks")
   
   tabIV = cbind( res1, res2, res3, res4)
   
   # remove controle variables
-  m1 = lm(COMRAT ~ DEPRAT,
-          data = crossSectionalTimeAveraged)
+  m1 = lm_robust(COMRAT ~ DEPRAT,
+          data = crossSectionalTimeAveraged, se_type = 'HC1')
   res1 = summaryOLS(m1, crossSectionalTimeAveraged, c("DEPRAT", "COMRAT"), "All Banks")
   
-  m1 = lm(COMRAT ~ DEPRAT,
-          data = cstaBig)
+  m1 = lm_robust(COMRAT ~ DEPRAT,
+          data = cstaBig, se_type = 'HC1')
   res2 = summaryOLS(m1, cstaBig, c("DEPRAT", "COMRAT"), "Large Banks")
   
-  m1 = lm(COMRAT ~ DEPRAT,
-          data = cstaMid)
+  m1 = lm_robust(COMRAT ~ DEPRAT,
+          data = cstaMid, se_type = 'HC1')
   res3 = summaryOLS(m1, cstaMid, c("DEPRAT", "COMRAT"), "Medium Banks")
   
-  m1 = lm(COMRAT ~ DEPRAT,
-          data = cstaSmall)
+  m1 = lm_robust(COMRAT ~ DEPRAT,
+          data = cstaSmall, se_type = 'HC1')
   res4 = summaryOLS(m1, cstaSmall, c("DEPRAT", "COMRAT"), "Small Banks")
   
   tabIVNoControl = cbind( res1, res2, res3, res4)
@@ -256,7 +259,7 @@ banksAsLiquidityProvider = function( dateStart, dateEnd){
           , w = ~ASSET + ciloans + persloans + reloans,
           data = as.data.frame( crossSectionalTimeAveraged),
           nbins = 50, # use 50 point to sum up the whole dataset
-          vce = "HC3") # compute covariance with HC3
+          vce = "HC1") # compute covariance with HC3
   ggsave(file = paste(dateToUse,"binsregLIQRAT.png", sep = "")) # save fig
   dev.off()
   
@@ -271,7 +274,7 @@ banksAsLiquidityProvider = function( dateStart, dateEnd){
           , w = ~ASSET + ciloans + persloans + reloans,
           data = as.data.frame( crossSectionalTimeAveraged),
           nbins = 50, # use 50 point to sum up the whole dataset
-          vce = "HC3") # compute covariance with HC3
+          vce = "HC1") # compute covariance with HC3
   ggsave(file = paste(dateToUse,"binsregSECRAT.png", sep = "")) # save fig
   dev.off()
   
@@ -286,7 +289,7 @@ banksAsLiquidityProvider = function( dateStart, dateEnd){
           , w = ~ASSET + ciloans + persloans + reloans,
           data = as.data.frame( crossSectionalTimeAveraged),
           nbins = 50, # use 50 point to sum up the whole dataset
-          vce = "HC3") # compute covariance with HC3
+          vce = "HC1") # compute covariance with HC3
   ggsave(file = paste(dateToUse,"binsregCOMRAT.png", sep = "")) # save fig
   dev.off()
   

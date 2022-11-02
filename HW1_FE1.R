@@ -6,7 +6,7 @@ library(fixest)
 library(stargazer)
 source("All_functions.R")
 
-#load("~/Documents/Université/HEC/PhD/6.1/FE I/HW3/.RData")
+#load("~/Documents/Université/HEC/PhD/6.1/FE I/HW3/lastRun.RData")
 
 # I built a function that takes as input the period of interest. The user need to provide the starting date
 # and the end date of the analysis period. You can see the rest of the code in the file "All_functions.R"
