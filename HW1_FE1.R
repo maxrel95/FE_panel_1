@@ -15,3 +15,5 @@ result2 = banksAsLiquidityProvider( dateStart = "1997-03-31", dateEnd = "2013-12
 
 shiftTable1 = as.data.frame(result2[1]) - as.data.frame(result1[1])
 shiftTable2 = as.data.frame(result2[2]) - as.data.frame(result1[2])
+
+effectControleT3 = as.data.frame(result1[3]) - as.data.frame(result1[2])

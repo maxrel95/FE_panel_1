@@ -37,7 +37,7 @@ banksAsLiquidityProvider = function( dateStart, dateEnd){
   dateToUse = paste(substr(  dateStart, 3,4), substr(  dateEnd, 3,4), sep = "")
   
   # import the data 
-  pnl<- read.csv( "PS1_data/callreports_1976_2021wc.csv" ) # read the data
+  pnl <- as.data.frame(fread( "PS1_data/callreports_1976_2021wc.csv" )) # read the data
   
   # indicate to the machine that the vector date is actually date datatype
   pnl$date = strptime(pnl$date, format = "%Y%m%d")
@@ -61,7 +61,7 @@ banksAsLiquidityProvider = function( dateStart, dateEnd){
   
   filteredData = df9296%>%
     na.omit() %>% # remove row with missing values
-    filter(chartertype==200 | chartertype==300 | chartertype==320 | chartertype==340)%>% # keeps only banks that are of these charter types
+    filter(chartertype==200 | chartertype==300 | chartertype==320 | chartertype==340) %>% # keeps only banks that are of these charter types
     group_by(bhcid, date ) %>% # group the bank by bhcid and by date
     summarise(fedfundsrepoasset=sum(fedfundsrepoasset), securities=sum(securities), assets=sum(assets),
               cash=sum(cash), transdep=sum(transdep),  deposits=sum(deposits),
