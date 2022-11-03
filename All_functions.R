@@ -14,7 +14,7 @@ summaryOLS = function( model, data, var, name ){
   res = resume$coefficients[2, c("Estimate", "t value")]
   res['Explanatory power'] = res["Estimate"]*( sd( data %>% select(var[1]) %>% unlist(),
                                                    na.rm = TRUE ) / sd( data %>% select(var[2]) %>% unlist(),
-                                                                        na.rm = TRUE ) )
+                                                   na.rm = TRUE ) )
   res = as.data.frame( res )
   colnames(res) = name
   return(res)
