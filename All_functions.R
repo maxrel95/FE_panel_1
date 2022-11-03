@@ -23,9 +23,10 @@ summaryOLS = function( model, data, var, name ){
 summaryfeols = function( model, data, var, name ){
   resume = summary( model )
   x = summary(model)
-  interest = data.frame(c(x$coefficients[1], x$coefficients[1]/x$se[1], x$coefficients[1]*(sd( data %>% select(var[1]) %>% unlist(),
-                                                                                               na.rm = TRUE ) / sd( data %>% select(var[2]) %>% unlist(),
-                                                                                                                    na.rm = TRUE ))),
+  interest = data.frame(c(x$coefficients[1], x$coefficients[1]/x$se[1],
+                          x$coefficients[1]*(sd( data %>% select(var[1]) %>% unlist(),
+                          na.rm = TRUE ) / sd( data %>% select(var[2]) %>% unlist(),
+                          na.rm = TRUE ))),
                         row.names = c('Estimate', 't value', "Explanatory power"))
   colnames(interest) = name
   return(interest)
@@ -35,11 +36,11 @@ summaryfeols = function( model, data, var, name ){
 banksAsLiquidityProvider = function( dateStart, dateEnd){
   # create a string variable that takes the year of studies to adjust the name of the results that are saved
   dateToUse = paste(substr(  dateStart, 3,4), substr(  dateEnd, 3,4), sep = "")
-  
-  # import the data 
+
+    # import the data 
   pnl <- as.data.frame(fread( "PS1_data/callreports_1976_2021wc.csv" )) # read the data
-  
-  # indicate to the machine that the vector date is actually date datatype
+
+    # indicate to the machine that the vector date is actually date datatype
   pnl$date = strptime(pnl$date, format = "%Y%m%d")
   
   # slice the data and keep only the period under study and the variables of interest
@@ -75,6 +76,7 @@ banksAsLiquidityProvider = function( dateStart, dateEnd){
             date = as.factor( as.character( date ) ) ) # define date and bhcid as factor to create dummies for FE
   
   nbrOfFirms = length(unique(filteredData$bhcid)) # compute the number of bank holding company
+  print(nbrOfFirms)
   
   dt = data.table() # create an empty table store the data needed for the regressions from raw data
   dt[, bhcid:=filteredData$bhcid] # create a vector with bank holding id in dt
@@ -259,7 +261,8 @@ banksAsLiquidityProvider = function( dateStart, dateEnd){
           , w = ~ASSET + ciloans + persloans + reloans,
           data = as.data.frame( crossSectionalTimeAveraged),
           nbins = 50, # use 50 point to sum up the whole dataset
-          vce = "HC1") # compute covariance with HC3
+          vce = "HC1") # compute covariance with HC1
+  #abline(lm(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans, data = crossSectionalTimeAveraged), col = "red")
   ggsave(file = paste(dateToUse,"binsregLIQRAT.png", sep = "")) # save fig
   dev.off()
   
@@ -323,8 +326,6 @@ banksAsLiquidityProvider = function( dateStart, dateEnd){
   # get all the corresponding data. but some banks dont have 20 date observations which reduce the total number. The latter, 
   # at each date, we measure the 600 largest and keep only these value so obviously we have more date. 
   
-  
-
   # run regressions with fixed effects  using feols from fixest package
   # regress LIQRAT on DEPRAT with control variables and bhcid as fixed effect  on the 600 largest banks
   m1 = feols(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | bhcid,
@@ -434,7 +435,6 @@ banksAsLiquidityProvider = function( dateStart, dateEnd){
 
   etable(m1,m2, m3, m4, m5, m6, file = paste("Output/", dateToUse, "resumeFELargeSmallCOMRAT.tex", sep = ""))
   tabIVb = cbind(rbind(res1, res2, res3), rbind(res4, res5, res6))
-  
   
   result = list(tabI, tabIII, tabIIINoControl, tabIIIFE, tabIV, tabIVNoControl, tabIVb)
   return(result)
