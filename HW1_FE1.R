@@ -1,10 +1,14 @@
 library(data.table) 
+library(readxl)
+library( plm )
 library( dplyr )
-library(binsreg)
-library(ggplot2)
 library(fixest)
-library(stargazer)
+library(lmtest)
+library(sandwich)
+library(estimatr)
+library(binsreg)
 source("All_functions.R")
+
 
 #load("~/Documents/Université/HEC/PhD/6.1/FE I/HW3/lastRun.RData")
 
@@ -17,3 +21,4 @@ shiftTable1 = as.data.frame(result2[1]) - as.data.frame(result1[1])
 shiftTable2 = as.data.frame(result2[2]) - as.data.frame(result1[2])
 
 effectControleT3 = as.data.frame(result1[3]) - as.data.frame(result1[2])
+
