@@ -335,12 +335,12 @@ banksAsLiquidityProvider = function( dateStart, dateEnd){
   res1 = summaryfeols(m1, panel600, c("DEPRAT", "LIQRAT"), "Large Banks") # same as for time averaged reg but adapted to the output of feols
 
   m2 = feols(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | date,
-             data = panel600 ) # same as above except that FE are date
+             data = panel600, vcov = cluster ~ bhcid ) # same as above except that FE are date
   etable(m2, file = paste("Output/", dateToUse,"largeBankLIQRATDate.tex", sep = ""))
   res2 = summaryfeols(m2, panel600, c("DEPRAT", "LIQRAT"), "Large Banks")
 
   m3 = feols(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | bhcid + date,
-             data = panel600, vcov = "twoway" ) # same regression except that FE are bhcid and date
+             data = panel600 ) # same regression except that FE are bhcid and date
   etable(m3, file = paste("Output/", dateToUse,"largeBankLIQRATBhcidDate.tex", sep = ""))
   res3 = summaryfeols(m3, panel600, c("DEPRAT", "LIQRAT"), "Large Banks")
 
@@ -351,12 +351,12 @@ banksAsLiquidityProvider = function( dateStart, dateEnd){
   res4 = summaryfeols(m3, panelSmall, c("DEPRAT", "LIQRAT"), "Small Banks")
 
   m5 = feols(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | date,
-             data = panelSmall )
+             data = panelSmall, vcov = cluster ~ bhcid )
   etable(m5, file = paste("Output/", dateToUse,"smallBankLIQRATDate.tex", sep = ""))
   res5 = summaryfeols(m5, panelSmall, c("DEPRAT", "LIQRAT"), "Small Banks")
 
   m6 = feols(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | bhcid + date,
-             data = panelSmall, vcov = "twoway" )
+             data = panelSmall )
   etable(m6, file = paste("Output/", dateToUse,"smallBankLIQRATBhcidDate.tex", sep = ""))
   res6 = summaryfeols(m6, panelSmall, c("DEPRAT", "LIQRAT"), "Small Banks")
 
@@ -370,12 +370,12 @@ banksAsLiquidityProvider = function( dateStart, dateEnd){
   res1 = summaryfeols(m1, panel600, c("DEPRAT", "SECRAT"), "Large Banks")
   
   m2 = feols(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | date,
-             data = panel600 )
+             data = panel600, vcov = cluster ~ bhcid )
   etable(m2, file = paste("Output/", dateToUse,"LargeBankSECRATDate.tex", sep = ""))
   res1 = summaryfeols(m1, panel600, c("DEPRAT", "SECRAT"), "Large Banks")
   
   m3 = feols(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | bhcid + date,
-             data = panel600, vcov = "twoway" )
+             data = panel600 )
   etable(m3, file = paste("Output/", dateToUse,"LargeBankSECRATBhcidDate.tex", sep = ""))
   res3 = summaryfeols(m1, panel600, c("DEPRAT", "SECRAT"), "Large Banks")
   
@@ -386,12 +386,12 @@ banksAsLiquidityProvider = function( dateStart, dateEnd){
   res4 = summaryfeols(m1, panelSmall, c("DEPRAT", "SECRAT"), "Small Banks")
   
   m5 = feols(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | date,
-             data = panelSmall )
+             data = panelSmall, vcov = cluster ~ bhcid )
   etable(m5, file = paste("Output/", dateToUse,"SmallBankSECRATDate.tex", sep = ""))
   res5 = summaryfeols(m1, panelSmall, c("DEPRAT", "SECRAT"), "Small Banks")
   
   m6 = feols(SECRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | bhcid + date,
-             data = panelSmall, vcov = "twoway" )
+             data = panelSmall )
   etable(m6, file = paste("Output/", dateToUse,"SmallBankSECRATBhcidDate.tex", sep = ""))
   res6 = summaryfeols(m1, panelSmall, c("DEPRAT", "SECRAT"), "Small Banks")
 
@@ -409,12 +409,12 @@ banksAsLiquidityProvider = function( dateStart, dateEnd){
   res1 = summaryfeols(m1, panel600, c("DEPRAT", "COMRAT"), "Large Banks")
 
   m2 = feols(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | date,
-             data = panel600 )
+             data = panel600, vcov = cluster ~ bhcid )
   etable(m2, file = paste("Output/", dateToUse,"LargeBankCOMRATDate.tex", sep = ""))
   res2 = summaryfeols(m2, panel600, c("DEPRAT", "COMRAT"), "Large Banks")
 
   m3 = feols(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | bhcid + date,
-             data = panel600, vcov = "twoway" )
+             data = panel600 )
   etable(m3, file = paste("Output/", dateToUse,"LargeBankCOMRATBhcidDate.tex", sep = ""))
   res3 = summaryfeols(m3, panel600, c("DEPRAT", "COMRAT"), "Large Banks")
   
@@ -425,12 +425,12 @@ banksAsLiquidityProvider = function( dateStart, dateEnd){
   res4 = summaryfeols(m4, panelSmall, c("DEPRAT", "COMRAT"), "Small Banks")
 
   m5 = feols(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | date,
-             data = panelSmall)
+             data = panelSmall, vcov = cluster ~ bhcid)
   etable(m5, file = paste("Output/", dateToUse,"SmallBankCOMRATDate.tex", sep = ""))
   res5 = summaryfeols(m5, panelSmall, c("DEPRAT", "COMRAT"), "Small Banks")
 
   m6 = feols(COMRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | bhcid + date,
-             data = panelSmall, vcov = "twoway" )
+             data = panelSmall )
   etable(m6, file = paste("Output/", dateToUse,"SmallBankCOMRATBhcidDate.tex", sep = ""))
   res6 = summaryfeols(m6, panelSmall, c("DEPRAT", "COMRAT"), "Small Banks")
 
