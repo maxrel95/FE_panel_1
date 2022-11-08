@@ -311,22 +311,6 @@ banksAsLiquidityProvider = function( dateStart, dateEnd){
   
   # construct the dataset for 600 and smallest banks with the largest at each date, the issue with that is that it is not comparable
   #with above 
-  #panelBigMidVar = dt %>%
-  #  group_by( date ) %>%
-  #  arrange( desc( ASSET ) ) %>%
-  #  slice( 1:600 ) %>%
-  #  ungroup() 
-  
-  #panelSmallVar = dt %>%
-  #  group_by( date ) %>%
-  #  arrange( desc( ASSET ) ) %>%
-  #  slice( 601:nbrOfFirms ) %>%
-  #  ungroup()
-  
-  # they dont have the same number of observations. why ? former we said : based on the average select the 600 largest, then
-  # get all the corresponding data. but some banks dont have 20 date observations which reduce the total number. The latter, 
-  # at each date, we measure the 600 largest and keep only these value so obviously we have more date. 
-  
   # run regressions with fixed effects  using feols from fixest package
   # regress LIQRAT on DEPRAT with control variables and bhcid as fixed effect  on the 600 largest banks
   m1 = feols(LIQRAT ~ DEPRAT + ASSET + ciloans + persloans + reloans | bhcid,
